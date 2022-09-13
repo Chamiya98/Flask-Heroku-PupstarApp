@@ -5,8 +5,6 @@ import array
 import pickle
 import re
 
-import mysql.connector
-
 import pyodbc
 # import cv2
 from nltk.corpus import stopwords
@@ -14,12 +12,12 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-#mydb = mysql.connector.connect(
+# mydb = mysql.connector.connect(
 #    host="localhost",
- #   user="root",
+#   user="root",
 #    password="B@uR3123#",
 #    database="dog_care"
-#)
+# )
 cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
                       "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
                       "Database=DogCare;"
@@ -27,12 +25,11 @@ cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
 
 cursor = cnxn.cursor()
 
-
-#mycursor = mydb.cursor()
+# mycursor = mydb.cursor()
 # Keras
 
 # Flask utils
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
 
 # from gevent.pywsgi import WSGIServer
 
@@ -1055,6 +1052,7 @@ class Text_Analysis():
 # IMPORTANT : do this only once
 text_analysis = Text_Analysis()
 
+
 # Some example comments for sentiment analysis
 # no need to include these example comments
 # pos_input_text = 'i love this place'
@@ -1073,13 +1071,13 @@ text_analysis = Text_Analysis()
 # print(f'{neg_input_text}\n:{text_analysis.labels[sn]}')
 # %%
 # Comments summarization
-#topics_positive_comments, topics_negative_comments = text_analysis.get_topics_positive_negative_comments(comments)
+# topics_positive_comments, topics_negative_comments = text_analysis.get_topics_positive_negative_comments(comments)
 # %%
-#for lst in topics_positive_comments:
-    #print(lst)
+# for lst in topics_positive_comments:
+# print(lst)
 # %%
-#for lst in topics_negative_comments:
-    #print(lst)
+# for lst in topics_negative_comments:
+# print(lst)
 
 
 # def separate_positive_negative_comments(self, comments):
@@ -1152,19 +1150,19 @@ def upload():
             unknownComments = int(unknownComments) + 1
 
     finalOutput = "Good comment Count: ", goodComments, "\n", "Bad comment Count: ", badComments, "\n", "unknown comments Count : ", unknownComments, "."
-    #postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
-    #print(arr)
-    #for lst in postrendingWords:
-        #print(lst)
+    # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
+    # print(arr)
+    # for lst in postrendingWords:
+    # print(lst)
     # %%
-    #for lst in negtendingwords:
-        #print(lst)
-    #out1 = "test"
+    # for lst in negtendingwords:
+    # print(lst)
+    # out1 = "test"
 
     return jsonify(
         message=finalOutput
-        #POStopicWords=postrendingWords,
-        #NEGtopicWords=negtendingwords
+        # POStopicWords=postrendingWords,
+        # NEGtopicWords=negtendingwords
 
     )
 

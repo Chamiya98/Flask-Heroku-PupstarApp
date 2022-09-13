@@ -1,28 +1,22 @@
 from __future__ import division, print_function
 
 import array
-import pickle
 import os
+import pickle
 import re
-
 
 import numpy as np
 import pyodbc
 import tensorflow as tf
-
-from keras.models import load_model
-
-
 # Flask utils
-from flask import Flask, redirect, url_for, request, render_template, Response, flash, jsonify
+from flask import Flask, redirect, request, Response, flash, jsonify
+from keras.models import load_model
 from nltk import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 from werkzeug.utils import secure_filename
 
 from textAnalysis import text_analysis
-
-
 
 # Define a flask app
 app = Flask(__name__)
@@ -46,7 +40,7 @@ model_behavior.make_predict_function()
 print('Model loaded. Check http://127.0.0.1:5000/')
 
 
-@app.route('/login', methods=['GET', 'POST'],endpoint='login')
+@app.route('/login', methods=['GET', 'POST'], endpoint='login')
 def upload():
     result = "This is from flask"
     print("This is my app")

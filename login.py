@@ -1,5 +1,4 @@
 from flask import jsonify, Flask
-from nltk import app
 
 app = Flask(__name__)
 
