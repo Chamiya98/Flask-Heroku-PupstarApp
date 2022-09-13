@@ -2,21 +2,16 @@ from __future__ import division, print_function
 
 import array
 import pickle
-# coding=utf-8
-import sys
 import os
-import glob
 import re
-from tkinter import Image
-import cv2
+
 
 import numpy as np
 import pyodbc
 import tensorflow as tf
-# Keras
-from keras.applications.imagenet_utils import preprocess_input, decode_predictions
+
 from keras.models import load_model
-from keras.preprocessing import image
+
 
 # Flask utils
 from flask import Flask, redirect, url_for, request, render_template, Response, flash, jsonify
@@ -27,7 +22,7 @@ from werkzeug.utils import secure_filename
 
 from textAnalysis import text_analysis
 
-# from gevent.pywsgi import WSGIServer
+
 
 # Define a flask app
 app = Flask(__name__)
@@ -47,11 +42,7 @@ model_disease.make_predict_function()
 model_behavior.make_predict_function()
 # print('Model loaded. Start serving...')
 
-# You can also use pretrained model from Keras
-# Check https://keras.io/applications/
-# from keras.applications.resnet50 import ResNet50
-# model = ResNet50(weights='imagenet')
-# model.save('')
+
 print('Model loaded. Check http://127.0.0.1:5000/')
 
 
