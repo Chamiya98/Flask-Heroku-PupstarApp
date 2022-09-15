@@ -1269,7 +1269,14 @@ class Text_Analysis():
         return topics_positive_comments, topics_negative_comments
 
 
-cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+# for windows
+# cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+# "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+# "Database=DogCare;"
+# "Trusted_Connection=yes;")
+
+# for linux
+cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
                       "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
                       "Database=DogCare;"
                       "Trusted_Connection=yes;")
