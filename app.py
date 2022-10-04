@@ -1,11 +1,11 @@
 from __future__ import division, print_function
-import array
+
 import base64
+import glob
 import os
 import pickle
 import random
 import re
-import glob
 from datetime import datetime
 
 import numpy as np
@@ -78,8 +78,12 @@ def db_connector():
     # "Database=dogcare;"
     # "Trusted_Connection=yes;")
     # for client
+    # cnxn = pyodbc.connect(
+    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    # return cnxn
+
     cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     return cnxn
 
 
