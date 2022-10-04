@@ -1,26 +1,28 @@
 from __future__ import division, print_function
-
 import array
+import base64
 import os
 import pickle
+import random
 import re
+import glob
+from datetime import datetime
 
 import numpy as np
 import pyodbc
 import tensorflow as tf
 # Flask utils
-from flask import Flask, redirect, request, Response, flash, jsonify
+from flask import Flask, redirect, render_template, request, flash, jsonify
 from keras.models import load_model
 from nltk import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
-from werkzeug.utils import secure_filename
 
 from textAnalysis import text_analysis
 
 # Define a flask app
 app = Flask(__name__)
-
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 # Model saved with Keras model.save()
 MODEL_PATH_breed = 'dog_breeds.h5'
 MODEL_PATH_disease = 'dog_diseases.h5'
@@ -38,6 +40,115 @@ model_behavior.make_predict_function()
 
 
 print('Model loaded. Check http://127.0.0.1:5000/')
+
+
+# Function for get current date
+def date_picker():
+    current_datetime = datetime.now()
+    date = str(current_datetime.strftime("%Y-%m-%d"))
+    return date
+
+
+# Function for get current date
+def date_picker_no_space():
+    current_datetime = datetime.now()
+    date = str(current_datetime.strftime("%Y%m%d"))
+    return date
+
+
+# Function for generate random number
+def random_number():
+    rand_no = str(random.randint(10000000, 99999999))
+    return rand_no
+
+
+# Function for generate random number
+def random_number_with_date():
+    date = date_picker_no_space()
+    rand_no = random_number()
+    new_rand_no = str(date) + str(rand_no)
+
+    return new_rand_no
+
+
+def db_connector():
+    # for windows
+    # cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+    # "Server=34.143.213.182;"
+    # "Database=dogcare;"
+    # "Trusted_Connection=yes;")
+    # for client
+    cnxn = pyodbc.connect(
+        'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    return cnxn
+
+
+cursor1 = db_connector().cursor()
+
+
+# -----------------------WebsiteConnection---------------------------------------------
+@app.route("/")
+def index():
+    return render_template("index.html")
+
+
+@app.route("/petcare")
+def petcare_page():
+    return render_template("/clinics/pet_care.html")
+
+
+# Route for add comment
+@app.route('/add_comment', methods=['GET', 'POST'])
+def add_comment():
+    if request.method == "POST":
+
+        name = request.form.get('name')
+        email = request.form.get('email')
+        comment = request.form.get('comment')
+        clinic_id = request.form.get('id')
+
+        comment_id = int(random_number())
+        comment_type = 2  # Already set unknown
+
+        if len(name) == 0 or len(email) == 0 or len(comment) == 0 or len(clinic_id) == 0:
+            return jsonify({'error': "Fields are empty!"})
+
+        else:
+
+            sp = text_analysis.get_sentiment_analysis_prediction(str(comment))
+            outputs = f'{text_analysis.labels[sp]}'
+
+            if outputs == "Positive":
+                comment_type = 1
+
+            elif outputs == "Negative":
+                comment_type = 0
+
+            conn = db_connector()
+            query = ''' INSERT INTO Comments (CommentID, Name, Email, ClinicID, Content, Type) VALUES (?, ?, ?, ?, ?, ?)'''
+            values = (comment_id, str(name), str(email), int(clinic_id), str(comment), int(comment_type))
+
+            cur = conn.cursor()
+            cur.execute(query, values)
+            conn.commit()
+            result = cur.rowcount
+
+            if result > 0:
+                return jsonify({'success': "Comment added!"})
+
+            else:
+                return jsonify({'error': "Comment not added!"})
+
+    return jsonify("Invalid")
+
+
+@app.route("/clinic_images")
+def clinic_images():
+    images_list = []
+    for file in glob.glob('static/images/images/team/*.jpg'):
+        images_list.append(file)
+
+    return jsonify(images_list)
 
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
@@ -92,19 +203,29 @@ def allowed_file(filename):
 
 @app.route('/breedmain', methods=['GET', 'POST'], endpoint='breed')
 def upload():
-    file = request.files['file']
-    if file.filename == '':
-        flash('No image selected for uploading')
-        return Response(response="No Image Selected")
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # print('upload_image filename: ' + filename)
-        flash('Image successfully uploaded and displayed below')
-        # return render_template('index.html', filename=filename)
-        # f = open("", "r")
-        breeds_image_path = './static/uploads/' + filename
-        breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, breeds_image_path,
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/breed/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+
+        breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
                                                                              breeds_class_labels)
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
@@ -148,20 +269,29 @@ behavior_class_labels = [
 
 @app.route('/behaviormain', methods=['GET', 'POST'], endpoint='behavior')
 def upload():
-    file = request.files['file']
-    if file.filename == '':
-        flash('No image selected for uploading')
-        return Response(response="No Image Selected")
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # print('upload_image filename: ' + filename)
-        flash('Image successfully uploaded and displayed below')
-        # return render_template('index.html', filename=filename)
-        # f = open("", "r")
-        behavior_image_path = './static/uploads/' + filename
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/behavior/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
         breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior,
-                                                                                      behavior_image_path,
+                                                                                      img_url,
                                                                                       behavior_class_labels)
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
@@ -246,20 +376,30 @@ disease_prescriptions = {
 
 @app.route('/disease', methods=['GET', 'POST'], endpoint='disease')
 def upload():
-    file = request.files['file']
-    if file.filename == '':
-        flash('No image selected for uploading')
-        return Response(response="No Image Selected")
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        # print('upload_image filename: ' + filename)
-        flash('Image successfully uploaded and displayed below')
-        # return render_template('index.html', filename=filename)
-        # f = open("", "r")
-        disease_image_path = './static/uploads/' + filename
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/diseases/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+
         pred_label_disease, breed_pred_prob_disease = get_prediction_probability_label_disease(model_disease,
-                                                                                               disease_image_path,
+                                                                                               img_url,
                                                                                                disease_class_labels)
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
@@ -1269,64 +1409,96 @@ class Text_Analysis():
         return topics_positive_comments, topics_negative_comments
 
 
-# for windows
-# cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
-# "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
-# "Database=DogCare;"
-# "Trusted_Connection=yes;")
+# @app.route('/comment', methods=['GET', 'POST'], endpoint='textAnalysis')
+# def upload():
+#     good_comments = int(0)
+#     bad_comments = int(0)
+#     unknown_comments = int(0)
+#     arr = array.posnegComments = []
+#     # t = []
+#     # global pos_input_text
+#     # if request.method == 'POST':
+#     con = db_connector()
+#     cursor = con.cursor()
+#     cursor.execute("Select ClinicID from clinics")
+#     counter = 1
+#     # t.append(mycursor.fetchall())
 
-# for linux
-cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
-                      "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
-                      "Database=DogCare;"
-                      "Trusted_Connection=yes;")
+#     t = cursor.fetchall()
 
-cursor = cnxn.cursor()
+#     print(t)
+
+#     # Dict = {1: 'Geeks', 2: 'For', 3: 'Geeks'}
+#     # i = 0
+#     # i: object
+#     for i in t:
+
+#         print("ClinicId:", i)
+#         cursor.execute('''SELECT Content FROM Comments WHERE ClinicID = ?''', i[0])
+#         # getclinic = "Select Content from Comments where ClinicID=%s"
+#         # values = (i)
+#         # cursor.execute(getclinic, values)
+
+#         result = cursor.fetchall()
+
+#         for x in result:
+#             arr.append(x)
+#             sp = text_analysis.get_sentiment_analysis_prediction(str(x))
+#             outputs = f'{text_analysis.labels[sp]}'
+#             print(outputs)
+#             if outputs == "Positive":
+
+#                 good_comments = int(good_comments) + 1
+
+#             elif outputs == "Negative":
+#                 bad_comments = int(bad_comments) + 1
+
+#             else:
+#                 unknown_comments = int(unknown_comments) + 1
+
+#         final_output = "Clinic Id:", counter, "Good comment Count: ", good_comments, "\n", "Bad comment Count: ", bad_comments, "\n", "unknown comments Count : ", unknown_comments, "."
+#         print(final_output)
+#         sql = '''Insert Into comment_analysis(ID, good_comment_count, bad_comment_count, unknown_comment_count, ClinicID) Values (?, ?, ?, ?, ?)'''
+#         val = (int(random_number()), good_comments, bad_comments, unknown_comments, counter)
+#         cursor.execute(sql, val)
+#         db_connector().commit()
+#         queryresult = cursor.rowcount
+#         print(queryresult)
+
+#         good_comments = int(0)
+#         bad_comments = int(0)
+#         unknown_comments = int(0)
+
+#         # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
+#         # print(arr)
+#         # for lst in postrendingWords:
+#         # print(lst)
+#         # %%
+#         # for lst in negtendingwords:
+#         # print(lst)
+#         counter += 1
+#     return jsonify(
+#         Result=final_output
+#         # Result=final_output
+#         # POStopicWords=postrendingWords,
+#         # NEGtopicWords=negtendingwords
+#     )
+#     # i = + 1
+#     # i = + 1
 
 
-@app.route('/comment', methods=['GET', 'POST'], endpoint='textAnalysis')
+# i = +1
+@app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
 def upload():
-    goodComments = int(0)
-    badComments = int(0)
-    unknownComments = int(0)
-    arr = array.posnegComments = []
-    # global pos_input_text
-    # if request.method == 'POST':
-
-    cursor.execute("Select content from comments")
-
-    result = cursor.fetchall()
-
-    for x in result:
-        arr.append(x)
-        sp = text_analysis.get_sentiment_analysis_prediction(str(x))
-        outputs = f'{text_analysis.labels[sp]}'
-        print(outputs)
-        if outputs == "Positive":
-
-            goodComments = int(goodComments) + 1
-
-        elif outputs == "Negative":
-            badComments = int(badComments) + 1
-
-        else:
-            unknownComments = int(unknownComments) + 1
-
-    finalOutput = "Good comment Count: ", goodComments, "\n", "Bad comment Count: ", badComments, "\n", "unknown comments Count : ", unknownComments, "."
-    # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
-    # print(arr)
-    # for lst in postrendingWords:
-    # print(lst)
-    # %%
-    # for lst in negtendingwords:
-    # print(lst)
-    # out1 = "test"
-
+    resarr = []
+    cursor1.execute(
+        "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+    testt = cursor1.fetchall()
+    # json_output = json.dumps(testt)
+    for row in testt:
+        resarr.append([x for x in row])  # or simply data.append(list(row))
     return jsonify(
-        message=finalOutput
-        # POStopicWords=postrendingWords,
-        # NEGtopicWords=negtendingwords
-
+        message=resarr,
     )
 
 

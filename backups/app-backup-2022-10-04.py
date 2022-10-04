@@ -1,49 +1,401 @@
 from __future__ import division, print_function
 
-# coding=utf-8
 import array
+import base64
+import os
 import pickle
+import random
 import re
+from datetime import datetime
 
+import numpy as np
 import pyodbc
-# import cv2
-from nltk.corpus import stopwords
-from nltk.stem.porter import PorterStemmer
+import tensorflow as tf
+# Flask utils
+from flask import Flask, redirect, request, flash, jsonify
+from keras.models import load_model
+from nltk import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
+
+from textAnalysis import text_analysis
+
+# Define a flask app
+app = Flask(__name__)
+APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+# Model saved with Keras model.save()
+MODEL_PATH_breed = 'dog_breeds.h5'
+MODEL_PATH_disease = 'dog_diseases.h5'
+MODEL_PATH_behavior = 'dog_behaviors.h5'
+MODEL_PATH = 'model.sav'
+ModelPath2 = 'count_vectorizer.sav'
+# Load your trained model
+model_breed = load_model(MODEL_PATH_breed)
+model_disease = load_model(MODEL_PATH_disease)
+model_behavior = load_model(MODEL_PATH_behavior)
+model_breed.make_predict_function()  # Necessary
+model_disease.make_predict_function()
+model_behavior.make_predict_function()
+# print('Model loaded. Start serving...')
+
+
+print('Model loaded. Check http://127.0.0.1:5000/')
+
+
+# Function for get current date
+def date_picker():
+    current_datetime = datetime.now()
+    date = str(current_datetime.strftime("%Y-%m-%d"))
+    return date
+
+
+# Function for get current date
+def date_picker_no_space():
+    current_datetime = datetime.now()
+    date = str(current_datetime.strftime("%Y%m%d"))
+    return date
+
+
+# Function for generate random number
+def random_number():
+    rand_no = str(random.randint(10000000, 99999999))
+    return rand_no
+
+
+# Function for generate random number
+def random_number_with_date():
+    date = date_picker_no_space()
+    rand_no = random_number()
+    new_rand_no = str(date) + str(rand_no)
+
+    return new_rand_no
 
 
 def db_connector():
     # for windows
-    # cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
-    # "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
-    # "Database=DogCare;"
-    # "Trusted_Connection=yes;")
+    cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                          "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+                          "Database=DogCare;"
+                          "Trusted_Connection=yes;")
 
-    # for client
-    cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    #     # for linux
+    #     # cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
+    #     #  "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+    #     # "Database=DogCare;"
+    #     # "Trusted_Connection=yes;")
+
     return cnxn
 
 
-cursor1 = db_connector().cursor()
-# Flask utils
-from flask import Flask, jsonify
+# -----------------------WebsiteConnection---------------------------------------------
+# @app.route("/")
+# def index():
+#     return render_template("pet_rays_animal_clinic/index.html")
 
-# from gevent.pywsgi import WSGIServer
 
-# Define a flask app
-app = Flask(__name__)
+# # Route for add comment
+# @app.route('/add_comment', methods=['GET', 'POST'])
+# def add_comment():
 
-# Model saved with Keras model.save()
-MODEL_PATH = 'model.sav'
-ModelPath2 = 'count_vectorizer.sav'
+#     if request.method == "POST":
 
-print('Model loaded. Check http://127.0.0.1:5000/')
+#         name = request.form.get('name')
+#         email = request.form.get('email')
+#         comment = request.form.get('comment')
+#         id = request.form.get('id')
 
-# %% md
-# Comments and stopwords
-# %%
+#         if len(name) == 0 or len(email) == 0 or len(comment) == 0 or len(id) == 0:
+#             return jsonify({'error': "Fields are empty!"})
+
+#         else:
+
+#             conn = db_connector()
+#             query = ''' INSERT INTO Comments (Name, Email, Content, ClinicID) VALUES (%s, %s, %s, %s)'''
+#             values = (int(name), str(email), str(comment), str(id))
+
+#             cur = conn.cursor()
+#             cur.execute(query, values)
+#             conn.commit()
+#             result = cur.rowcount
+
+#             if result > 0:
+#                 return jsonify({'success': "Comment added!"})
+
+#             else:
+#                 return jsonify({'error': "Comment not added!"})
+
+#     return jsonify("Invalid")
+
+
+@app.route('/login', methods=['GET', 'POST'], endpoint='login')
+def upload():
+    result = "This is from flask"
+    print("This is my app")
+
+    return jsonify(
+        message=result,
+    )
+
+
+def get_prediction_probability_label(model, img_path, class_labels):
+    img1 = tf.keras.utils.load_img(
+        img_path, grayscale=False, color_mode='rgb', target_size=[224, 224],
+        interpolation='nearest'
+    )
+    input_arr = tf.keras.preprocessing.image.img_to_array(img1)
+    input_arr = np.array([input_arr])  # Convert single image to a batch.
+    input_arr = input_arr / 255
+    pred_probs = model.predict(input_arr)[0]
+
+    pred_class = np.argmax(pred_probs)
+    pred_label = class_labels[pred_class]
+    pred_prob = round(pred_probs[pred_class] * 100, 2)
+
+    return pred_label, pred_prob
+
+
+breeds_model_path = 'dog_breeds.h5'
+# breeds_image_path = ''
+breeds_class_labels = [
+    'German shepherd',
+    'Labrador retriever',
+    'Golden retriever',
+    'Rottweiler']
+
+UPLOAD_FOLDER = 'static/uploads/'
+
+app.secret_key = "secret key"
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
+
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+
+# -------------------Breed app --------------------------------------------------------
+
+@app.route('/breedmain', methods=['GET', 'POST'], endpoint='breed')
+def upload():
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/breed/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+
+        breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
+                                                                             breeds_class_labels)
+        # print(breed_pred_label + "Breed")
+        # return (breed_pred_label, breed_pred_prob)
+        result = "Breed is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        # return Response(response=result)
+        # return Response(respons)
+        return jsonify(
+            message=result
+        )
+    else:
+        flash('Allowed image types are - png, jpg, jpeg, gif')
+        return redirect(request.url)
+
+
+# -----------------------------Behaviour-------------------------------------------
+
+def get_prediction_probability_label_behavior(model, img_path, class_labels):
+    img = tf.keras.utils.load_img(
+        img_path, grayscale=False, color_mode='rgb', target_size=[224, 224],
+        interpolation='nearest'
+    )
+    input_arr = tf.keras.preprocessing.image.img_to_array(img)
+    input_arr = np.array([input_arr])  # Convert single image to a batch.
+    input_arr = input_arr / 255
+    pred_probs = model.predict(input_arr)[0]
+
+    pred_class = np.argmax(pred_probs)
+    pred_label_behavior = class_labels[pred_class]
+    pred_prob_behavior = round(pred_probs[pred_class] * 100, 2)
+
+    return pred_label_behavior, pred_prob_behavior
+
+
+behavior_model_path = 'dog_behaviors.h5'
+# breeds_image_path = ''
+behavior_class_labels = [
+    'Angry',
+    'Happy',
+    'Sad']
+
+
+@app.route('/behaviormain', methods=['GET', 'POST'], endpoint='behavior')
+def upload():
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/behavior/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+        breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior,
+                                                                                      img_url,
+                                                                                      behavior_class_labels)
+        # print(breed_pred_label + "Breed")
+        # return (breed_pred_label, breed_pred_prob)
+        result = "Mood is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        # return Response(response=result)
+        # return Response(respons)
+        return jsonify(
+            message=result
+        )
+    else:
+        flash('Allowed image types are - png, jpg, jpeg, gif')
+        return redirect(request.url)
+
+
+# -----------------------------Disease-------------------------------------------
+
+def get_prediction_probability_label_disease(model, img_path, class_labels):
+    img = tf.keras.utils.load_img(
+        img_path, grayscale=False, color_mode='rgb', target_size=[224, 224],
+        interpolation='nearest'
+    )
+    input_arr = tf.keras.preprocessing.image.img_to_array(img)
+    input_arr = np.array([input_arr])  # Convert single image to a batch.
+    input_arr = input_arr / 255
+    pred_probs = model.predict(input_arr)[0]
+
+    pred_class = np.argmax(pred_probs)
+    pred_label = class_labels[pred_class]
+    pred_prob = round(pred_probs[pred_class] * 100, 2)
+
+    return (pred_label, pred_prob)
+
+
+disease_model_path = 'dog_diseases.h5'
+# breeds_image_path = ''
+disease_class_labels = [
+    'Fungal & yeast infection',
+    'ringworm',
+    'shedding and hair loss (alopecia)',
+    'skin tumors',
+    'ticks']
+
+disease_prescriptions = {
+    'Fungal & yeast infection': (
+        'Antifungal shampoo',
+        'Ketoconazole cream',
+        'Itraconazole 100mg capsules',
+        'Mycoral cream'
+    ),
+    'ringworm': (
+        'The most common way to treat ringworm in dogs is to use a combination of topical therapy (application of creams, ointments, or shampoos) and systemic therapy (administration of anti-fungal drugs by mouth) ',
+        'In order for treatment to be successful, all environmental contamination must be eliminated.',
+    ),
+    'shedding and hair loss (alopecia)': (
+        'Secondary bacterial infections are present, antibiotics may also be prescribed.',
+        'Antifungal and Manage shampoo',
+        'Rash powder',
+        'Nilmange shampoo',
+        'Labskin lotion ',
+        'Ivermectin 10mg tablets',
+        'Ivermectin injection'
+    ),
+    'skin tumors': (
+        'Surgery is often the first step for some the tumors',
+        'If the tumor cannot be removed in its entirety or if it has spread to nearby lymph nodes, radiation is commonly used',
+        'By these methods\' tumors can be controlled nearly 70% of the time, though recurrence is common',
+        'Chemotherapy is often used in combination with surgery and/or radiation therapy ',
+        'There is also a vaccine that causes the dog\'s own immune system to attack tumor cells, which often successfully extends the survival time of dogs with oral tumors.'
+    ),
+    'ticks': (
+        'Ticks and Flea shampoo',
+        'Asuntol soap',
+        'Bayticol EC spray',
+        'Nexgrad tablets',
+        'Detick solution ',
+        'Antick solution',
+        'Tikamit solution ',
+        'Simperica tablets'
+    )
+}
+
+
+@app.route('/disease', methods=['GET', 'POST'], endpoint='disease')
+def upload():
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+
+        if image == None:
+            return jsonify({'error': "Image not uploaded"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/diseases/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+
+        pred_label_disease, breed_pred_prob_disease = get_prediction_probability_label_disease(model_disease,
+                                                                                               img_url,
+                                                                                               disease_class_labels)
+        # print(breed_pred_label + "Breed")
+        # return (breed_pred_label, breed_pred_prob)
+        result = "Disease is: " + pred_label_disease + "& Matching Probability is:" + str(breed_pred_prob_disease)
+        medications = []
+        for txt in disease_prescriptions[pred_label_disease]:
+            medications.append(txt)
+            print(txt)
+        # return Response(response=result)
+        # return Response(respons)
+        return jsonify(
+            Disease=result,
+            medications=medications
+        )
+    else:
+        flash('Allowed image types are - png, jpg, jpeg, gif')
+        return redirect(request.url)
+
+
+# -----------------------------Comment Analysis-------------------------------------------
 stopwords = [
     'i',
     'me',
@@ -1033,54 +1385,115 @@ class Text_Analysis():
         return topics_positive_comments, topics_negative_comments
 
 
-text_analysis = Text_Analysis()
+# for windows
+cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                      "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+                      "Database=DogCare;"
+                      "Trusted_Connection=yes;")
+
+# for linux
+# cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
+#  "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+# "Database=DogCare;"
+# "Trusted_Connection=yes;")
+
+cursor = cnxn.cursor()
 
 
-@app.route('/comment', methods=['GET', 'POST'])
+@app.route('/comment', methods=['GET', 'POST'], endpoint='textAnalysis')
 def upload():
-    goodComments = int(0)
-    badComments = int(0)
-    unknownComments = int(0)
+    good_comments = int(0)
+    bad_comments = int(0)
+    unknown_comments = int(0)
     arr = array.posnegComments = []
+    # t = []
     # global pos_input_text
     # if request.method == 'POST':
+    con = db_connector()
+    cursor = con.cursor()
+    cursor.execute("Select ClinicID from clinics")
+    counter = 1
+    # t.append(mycursor.fetchall())
 
-    cursor1.execute("Select content from comments")
+    t = cursor.fetchall()
 
-    result = cursor1.fetchall()
+    print(t)
 
-    for x in result:
-        arr.append(x)
-        sp = text_analysis.get_sentiment_analysis_prediction(str(x))
-        outputs = f'{text_analysis.labels[sp]}'
-        print(outputs)
-        if outputs == "Positive":
+    # Dict = {1: 'Geeks', 2: 'For', 3: 'Geeks'}
+    # i = 0
+    # i: object
+    for i in t:
 
-            goodComments = int(goodComments) + 1
+        print("ClinicId:", i)
+        cursor.execute('''SELECT Content FROM Comments WHERE ClinicID = ?''', i[0])
+        # getclinic = "Select Content from Comments where ClinicID=%s"
+        # values = (i)
+        # cursor.execute(getclinic, values)
 
-        elif outputs == "Negative":
-            badComments = int(badComments) + 1
+        result = cursor.fetchall()
 
-        else:
-            unknownComments = int(unknownComments) + 1
+        for x in result:
+            arr.append(x)
+            sp = text_analysis.get_sentiment_analysis_prediction(str(x))
+            outputs = f'{text_analysis.labels[sp]}'
+            print(outputs)
+            if outputs == "Positive":
 
-    finalOutput = "Good comment Count: ", goodComments, "\n", "Bad comment Count: ", badComments, "\n", "unknown comments Count : ", unknownComments, "."
-    # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
-    # print(arr)
-    # for lst in postrendingWords:
-    # print(lst)
-    # %%
-    # for lst in negtendingwords:
-    # print(lst)
-    # out1 = "test"
+                good_comments = int(good_comments) + 1
 
+            elif outputs == "Negative":
+                bad_comments = int(bad_comments) + 1
+
+            else:
+                unknown_comments = int(unknown_comments) + 1
+
+        final_output = "Clinic Id:", counter, "Good comment Count: ", good_comments, "\n", "Bad comment Count: ", bad_comments, "\n", "unknown comments Count : ", unknown_comments, "."
+        print(final_output)
+        sql = '''Insert Into comment_analysis(ID, good_comment_count, bad_comment_count, unknown_comment_count, ClinicID) Values (?, ?, ?, ?, ?)'''
+        val = (int(random_number()), good_comments, bad_comments, unknown_comments, counter)
+        cursor.execute(sql, val)
+        db_connector().commit()
+        queryresult = cursor.rowcount
+        print(queryresult)
+
+        good_comments = int(0)
+        bad_comments = int(0)
+        unknown_comments = int(0)
+
+        # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
+        # print(arr)
+        # for lst in postrendingWords:
+        # print(lst)
+        # %%
+        # for lst in negtendingwords:
+        # print(lst)
+        counter += 1
     return jsonify(
-        message=finalOutput
+        Result=final_output
+        # Result=final_output
         # POStopicWords=postrendingWords,
         # NEGtopicWords=negtendingwords
+    )
+    # i = + 1
+    # i = + 1
 
+
+# i = +1
+@app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
+def upload():
+    resarr = []
+    # result = "This is from flask"
+    cursor.execute(
+        "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+    testt = cursor.fetchall()
+    # json_output = json.dumps(testt)
+    for row in testt:
+        resarr.append([x for x in row])  # or simply data.append(list(row))
+    return jsonify(
+        message=resarr,
     )
 
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
+    # app.run(debug=True)
