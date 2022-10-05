@@ -4,30 +4,27 @@ from __future__ import division, print_function
 import array
 import pickle
 import re
-
+import subprocess
 
 import pyodbc
 # import cv2
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
-from pip._internal.utils import subprocess
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 
+#def create_kerberos_ticket(user_name, domain_name, user_password):
+    #ssh = subprocess.Popen(["kinit", f'{user_name}@{domain_name}'],
+                           #stdin=subprocess.PIPE,
+                           #stdout=subprocess.PIPE,
+                           #stderr=subprocess.PIPE,
+                           #universal_newlines=True,
+                           #bufsize=0)
 
-
-def create_kerberos_ticket(user_name, domain_name, user_password):
-    ssh = subprocess.Popen(["kinit", f'{user_name}@{domain_name}'],
-                           stdin=subprocess.PIPE,
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE,
-                           universal_newlines=True,
-                           bufsize=0)
-
-    ssh.stdin.write(f"{user_password}\n")
-    ssh.stdin.write("exit\n")
-    ssh.stdin.close()
+    #ssh.stdin.write(f"{user_password}\n")
+    #ssh.stdin.write("exit\n")
+    #ssh.stdin.close()
 
 
 def db_connector():
@@ -37,19 +34,19 @@ def db_connector():
     # "Database=DogCare;"
     # "Trusted_Connection=yes;")
 
-    # for client
-    # cnxn = pyodbc.connect(
-    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
-    # return cnxn
+    #for client
+    cnxn = pyodbc.connect(
+    'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    return cnxn
 
     # for server
-    cnxn = pyodbc.connect(
-        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
-    user_name = 'dogcare'
-    user_password = 'dogcare123'
-    domain_name = '34.143.213.182'
+    #cnxn = pyodbc.connect(
+        #'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+    #user_name = 'dogcare'
+    #user_password = 'dogcare123'
+    #domain_name = '34.143.213.182'
 
-    create_kerberos_ticket(user_name, domain_name, user_password)
+    #create_kerberos_ticket(user_name, domain_name, user_password)
     return cnxn
 
 
