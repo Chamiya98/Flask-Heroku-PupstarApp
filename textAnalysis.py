@@ -40,7 +40,7 @@ def db_connector():
 
     #for server
     cnxn = pyodbc.connect(
-        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;TrustServerCertificate=yes')
+        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
     user_name = 'dogcare'
     user_password = 'dogcare123'
     domain_name = '34.143.213.182'
