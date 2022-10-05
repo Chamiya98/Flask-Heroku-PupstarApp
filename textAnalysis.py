@@ -4,12 +4,13 @@ from __future__ import division, print_function
 import array
 import pickle
 import re
-import subprocess
+
 
 import pyodbc
 # import cv2
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
+from pip._internal.utils import subprocess
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
