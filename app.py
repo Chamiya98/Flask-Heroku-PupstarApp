@@ -94,12 +94,14 @@ def db_connector():
     # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
-    cnxn = pyodbc.connect(
-        'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
-    return cnxn
-
     #cnxn = pyodbc.connect(
-       # 'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+        #'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    #return cnxn
+
+    cnxn = pyodbc.connect(
+       'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+
+
     #user_name = 'dogcare'
     #user_password = 'dogcare123'
     #domain_name = '34.143.213.182'
