@@ -13,7 +13,7 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-subprocess.__file__
+
 
 
 def create_kerberos_ticket(user_name, domain_name, user_password):
