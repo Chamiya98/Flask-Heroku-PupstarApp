@@ -187,7 +187,7 @@ def Login():
     if username == "" or password == "":
         loginresult = "Please fill the all fields !"
     else:
-        cursor1.execute("SELECT * FROM `users` WHERE `username` = ? AND `password` = ?",
+        cursor1.execute("SELECT * FROM 'users' WHERE 'username' = ? AND 'password' = ?",
                        (username, password))
         if cursor1.fetchone() is not None:
             #HomeWindow()
