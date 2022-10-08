@@ -232,7 +232,7 @@ def Login():
 def dogList():
 
     dog_Array = []
-    cursor1.execute("select Full_Name from Dogs")
+    cursor1.execute("select Dogid, Full_Name from Dogs")
 
     testt = cursor1.fetchall()
 
