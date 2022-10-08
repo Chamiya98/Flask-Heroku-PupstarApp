@@ -7,7 +7,7 @@ import pickle
 import random
 import re
 from asyncio import subprocess
-from datetime import datetime
+from datetime import datetime, date
 
 import numpy as np
 import pyodbc
@@ -243,6 +243,41 @@ def dogList():
         message=dog_Array
     )
 
+@app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
+def pastDataBehavior():
+
+    breedName = request.args.get('dogname')
+    behavior = request.args.get('behavior')
+    #password = request.args.get('password')
+    #fullname = request.args.get('fullname')
+
+    if breedName == "" or behavior == "":
+        loginresult = "No Name Found"
+        queryResult = "Insertion Failed"
+    else:
+
+        today = date.today()
+        print("Today's date:", today)
+        cursor1.execute("select Dogid from Dogs where Full_Name = %s", breedName)
+        dogId = cursor1.fetchone()
+        print("DogId:" , dogId)
+        conn = db_connector()
+        query = ''' INSERT INTO behaviorPastData (behavior, Date) VALUES (?, ?)'''
+        values = (behavior, today)
+
+        cur = conn.cursor()
+        cur.execute(query, values)
+        conn.commit()
+        loginresult = cur.rowcount
+        queryResult = "Inserted"
+
+
+
+    return jsonify(
+        message=loginresult,
+        insertRes= queryResult
+    )
+
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
@@ -379,10 +414,12 @@ def upload():
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
         result = "Mood is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        md = breed_pred_label
         # return Response(response=result)
         # return Response(respons)
         return jsonify(
-            message=result
+            message=result,
+            mood=md
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
