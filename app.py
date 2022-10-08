@@ -70,18 +70,20 @@ def random_number_with_date():
     new_rand_no = str(date) + str(rand_no)
 
     return new_rand_no
-#def create_kerberos_ticket(user_name, domain_name, user_password):
 
-    #ssh = subprocess.Popen(["kinit", f'{user_name}@{domain_name}'],
-                        #stdin =subprocess.PIPE,
-                       # stdout=subprocess.PIPE,
-                        # stderr=subprocess.PIPE,
-                        #universal_newlines=True,
-                       # bufsize=0)
 
-    #ssh.stdin.write(f"{user_password}\n")
-    #ssh.stdin.write("exit\n")
-    #ssh.stdin.close()
+# def create_kerberos_ticket(user_name, domain_name, user_password):
+
+# ssh = subprocess.Popen(["kinit", f'{user_name}@{domain_name}'],
+# stdin =subprocess.PIPE,
+# stdout=subprocess.PIPE,
+# stderr=subprocess.PIPE,
+# universal_newlines=True,
+# bufsize=0)
+
+# ssh.stdin.write(f"{user_password}\n")
+# ssh.stdin.write("exit\n")
+# ssh.stdin.close()
 
 def db_connector():
     # for windows
@@ -96,17 +98,16 @@ def db_connector():
 
     #cnxn = pyodbc.connect(
         #'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
-    #return cnxn
+    # return cnxn
 
     cnxn = pyodbc.connect(
-       'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+    'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
 
+    # user_name = 'dogcare'
+    # user_password = 'dogcare123'
+    # domain_name = '34.143.213.182'
 
-    #user_name = 'dogcare'
-    #user_password = 'dogcare123'
-    #domain_name = '34.143.213.182'
-
-    #create_kerberos_ticket(user_name, domain_name, user_password)
+    # create_kerberos_ticket(user_name, domain_name, user_password)
     return cnxn
 
 
@@ -133,6 +134,8 @@ def add_comment():
         email = request.form.get('email')
         comment = request.form.get('comment')
         clinic_id = request.form.get('id')
+
+        print(name)
 
         comment_id = int(random_number())
         comment_type = 2  # Already set unknown
@@ -180,31 +183,24 @@ def clinic_images():
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
 def Login():
-    loginresult = ""
-    #Database()
-    username = request.json['username']
-    password = request.json['password']
-    if username == "" or password == "":
+
+    username1 = request.args.get('username')
+    password1 = request.args.get('password')
+
+    if username1 == "" or password1 == "":
         loginresult = "Please fill the all fields !"
     else:
-        cursor1.execute("SELECT * FROM 'users' WHERE 'username' = ? AND 'password' = ?",
-                       (username, password))
+        cursor1.execute("SELECT * FROM users WHERE username = ? AND password = ?",
+                        (username1, password1))
         if cursor1.fetchone() is not None:
-            #HomeWindow()
-            #USERNAME.set("")
-            #PASSWORD.set("")
-            #lbl_text.config(text="")
             loginresult = "Login Succeeded"
         else:
 
-            result = "Login Succeeded"
-    cursor1.close()
+            loginresult = "Login Failed"
+
     return jsonify(
         message=loginresult
     )
-
-    #conn.close()
-
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
@@ -1536,8 +1532,8 @@ class Text_Analysis():
 @app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
 def upload():
     resarr = []
-    #cursor1.execute(
-        #"Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+    # cursor1.execute(
+    # "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
     cursor1.execute(
         "SELECT ClinicID, sum(Case when Type=1 then 1 else 0 end) as good, sum(Case when Type=0 then 1 else 0 end) as bad, sum(Case when Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments group by ClinicID ")
 
@@ -1545,10 +1541,11 @@ def upload():
     # json_output = json.dumps(testt)
     for row in testt:
         resarr.append([x for x in row])
-    resarr# or simply data.append(list(row))
+    resarr  # or simply data.append(list(row))
     return jsonify(
         message=resarr,
     )
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
