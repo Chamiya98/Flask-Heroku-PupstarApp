@@ -227,6 +227,17 @@ def Login():
         qresult=queryResult
     )
 
+    @app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
+    def dogList():
+
+        cursor1.execute("SELECT Full_Name FROM Dogs")
+        testt = cursor1.fetchall()
+        print(testt)
+        return jsonify(
+            message=testt
+
+        )
+
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
