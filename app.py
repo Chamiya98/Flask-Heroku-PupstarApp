@@ -212,7 +212,7 @@ def Login():
         loginresult = "Please fill the all fields !"
     else:
         conn = db_connector()
-        query = ''' INSERT INTO Comments (username, password, fullname) VALUES (?, ?, ?)'''
+        query = ''' INSERT INTO users (username, password, fullname) VALUES (?, ?, ?)'''
         values = (email, password, fullname)
 
         cur = conn.cursor()
