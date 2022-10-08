@@ -107,7 +107,7 @@ def db_connector():
     #domain_name = '34.143.213.182'
 
     #create_kerberos_ticket(user_name, domain_name, user_password)
-    return cnxn
+    #return cnxn
 
 
 cursor1 = db_connector().cursor()
@@ -179,13 +179,31 @@ def clinic_images():
 
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
-def upload():
-    result = "This is from flask"
-    print("This is my app")
+def Login():
+    loginresult = ""
+    #Database()
+    username = request.json['username']
+    password = request.json['password']
+    if username == "" or password == "":
+        loginresult = "Please fill the all fields !"
+    else:
+        cursor1.execute("SELECT * FROM `member` WHERE `username` = ? AND `password` = ?",
+                       (username, password))
+        if cursor1.fetchone() is not None:
+            #HomeWindow()
+            #USERNAME.set("")
+            #PASSWORD.set("")
+            #lbl_text.config(text="")
+            loginresult = "Login Succeeded"
+        else:
 
+            result = "Login Succeeded"
+    cursor1.close()
     return jsonify(
-        message=result,
+        message=loginresult
     )
+
+    #conn.close()
 
 
 def get_prediction_probability_label(model, img_path, class_labels):
@@ -1518,16 +1536,19 @@ class Text_Analysis():
 @app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
 def upload():
     resarr = []
+    #cursor1.execute(
+        #"Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
     cursor1.execute(
-        "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+        "SELECT ClinicID, sum(Case when Type=1 then 1 else 0 end) as good, sum(Case when Type=0 then 1 else 0 end) as bad, sum(Case when Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments group by ClinicID ")
+
     testt = cursor1.fetchall()
     # json_output = json.dumps(testt)
     for row in testt:
-        resarr.append([x for x in row])  # or simply data.append(list(row))
+        resarr.append([x for x in row])
+    resarr# or simply data.append(list(row))
     return jsonify(
         message=resarr,
     )
-
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
