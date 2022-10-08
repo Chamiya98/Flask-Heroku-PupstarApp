@@ -47,7 +47,7 @@ def db_connector():
     #domain_name = '34.143.213.182'
 
     #create_kerberos_ticket(user_name, domain_name, user_password)
-    #return cnxn
+    return cnxn
 
 
 cursor1 = db_connector().cursor()
