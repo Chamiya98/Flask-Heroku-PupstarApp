@@ -202,7 +202,7 @@ def Login():
     )
 
 
-@app.route('/signup', methods=['GET', 'POST'], endpoint='login')
+@app.route('/signup', methods=['GET', 'POST'], endpoint='signup')
 def Login():
     email = request.args.get('email')
     password = request.args.get('password')
