@@ -251,6 +251,7 @@ def pastDataBehavior():
     #password = request.args.get('password')
     #fullname = request.args.get('fullname')
 
+    print(breedName, behavior)
     if breedName == "" or behavior == "":
         loginresult = "No Name Found"
         queryResult = "Insertion Failed"
