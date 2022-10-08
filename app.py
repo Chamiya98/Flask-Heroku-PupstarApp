@@ -230,17 +230,17 @@ def Login():
 
 @app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
 def dogList():
-    dogArr = []
+
+    dog_Array = []
     cursor1.execute("select * from Dogs")
 
     testt = cursor1.fetchall()
 
-    for x in testt:
-        dogArr.append(x)
+    for row in testt:
+        dog_Array.append([x for x in row])
 
     return jsonify(
-        message=dogArr
-
+        message=dog_Array
     )
 
 
