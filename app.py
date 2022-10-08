@@ -96,12 +96,12 @@ def db_connector():
     # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
-    # cnxn = pyodbc.connect(
-    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    #cnxn = pyodbc.connect(
+     #   'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
     cnxn = pyodbc.connect(
-        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+     'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
 
     # user_name = 'dogcare'
     # user_password = 'dogcare123'
@@ -221,22 +221,27 @@ def Login():
         conn.commit()
         loginresult = cur.rowcount
         queryResult = "Inserted"
-        #result = cur.rowcount
+        # result = cur.rowcount
     return jsonify(
         message=loginresult,
         qresult=queryResult
     )
 
-    @app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
-    def dogList():
 
-        cursor1.execute("SELECT Full_Name FROM Dogs")
-        testt = cursor1.fetchall()
-        print(testt)
-        return jsonify(
-            message=testt
+@app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
+def dogList():
+    dogArr = []
+    cursor1.execute("select * from Dogs")
 
-        )
+    testt = cursor1.fetchall()
+
+    for x in testt:
+        dogArr.append(x)
+
+    return jsonify(
+        message=dogArr
+
+    )
 
 
 def get_prediction_probability_label(model, img_path, class_labels):
