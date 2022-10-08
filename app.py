@@ -96,12 +96,12 @@ def db_connector():
     # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
-    #cnxn = pyodbc.connect(
-        #'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    # cnxn = pyodbc.connect(
+    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
     cnxn = pyodbc.connect(
-    'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
 
     # user_name = 'dogcare'
     # user_password = 'dogcare123'
@@ -183,7 +183,6 @@ def clinic_images():
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
 def Login():
-
     username1 = request.args.get('username')
     password1 = request.args.get('password')
 
@@ -201,6 +200,32 @@ def Login():
     return jsonify(
         message=loginresult
     )
+
+
+@app.route('/signup', methods=['GET', 'POST'], endpoint='login')
+def Login():
+    email = request.args.get('email')
+    password = request.args.get('password')
+    fullname = request.args.get('fullname')
+
+    if email == "" or password == "" or fullname == "":
+        loginresult = "Please fill the all fields !"
+    else:
+        conn = db_connector()
+        query = ''' INSERT INTO Comments (username, password, fullname) VALUES (?, ?, ?)'''
+        values = (email, password, fullname)
+
+        cur = conn.cursor()
+        cur.execute(query, values)
+        conn.commit()
+        loginresult = cur.rowcount
+        queryResult = "Inserted"
+        #result = cur.rowcount
+    return jsonify(
+        message=loginresult,
+        qresult=queryResult
+    )
+
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
