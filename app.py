@@ -210,6 +210,7 @@ def Login():
 
     if email == "" or password == "" or fullname == "":
         loginresult = "Please fill the all fields !"
+        queryResult = "Insertion Failed"
     else:
         conn = db_connector()
         query = ''' INSERT INTO users (username, password, fullname) VALUES (?, ?, ?)'''
