@@ -234,7 +234,7 @@ def Login():
         testt = cursor1.fetchall()
         print(testt)
         return jsonify(
-            message=testt
+            message=testtgit
 
         )
 
