@@ -1636,7 +1636,7 @@ def upload():
     resarr = []
 
     cursor1.execute(
-        "SELECT ClinicID, sum(Case when Type=1 then 1 else 0 end) as good, sum(Case when Type=0 then 1 else 0 end) as bad, sum(Case when Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments group by ClinicID ")
+        "SELECT cm.ClinicID,c.Name,c.Address, sum(Case when cm.Type=1 then 1 else 0 end) as good, sum(Case when cm.Type=0 then 1 else 0 end) as bad, sum(Case when cm.Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments cm inner join clinics c on c.ClinicID = cm.ClinicID group by cm.ClinicID, c.Name, c.Address")
 
     testt = cursor1.fetchall()
     # json_output = json.dumps(testt)
