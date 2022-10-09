@@ -288,7 +288,7 @@ def pastDataBehavior():
         #dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
-        query = ''' INSERT INTO diseasePastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
+        query = ''' INSERT INTO diseasePastData (disease, Date, dogId) VALUES (?, ?, ?)'''
         values = (behavior, today, insertdogId)
 
         cur = conn.cursor()
