@@ -216,7 +216,7 @@ def dogList():
     )
 
 
-@app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
+@app.route('/insertbehaviorPastData', methods=['GET'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
     breedName = request.values['dogname']
     behavior = request.form['behavior']
