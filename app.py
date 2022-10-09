@@ -218,11 +218,11 @@ def dogList():
 
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-    #breedName = request.args('dogname')
-    #behavior = request.args('behavior')
+    breedName = request.args.get('dogname')
+    behavior = request.args.get('behavior')
 
-    breedName = User.query.filter_by(breedName=request.form['dogname']).first()
-    behavior = User.query.filter_by(behavior=request.form['behavior']).first()
+    #breedName = User.query.filter_by(breedName=request.form['dogname']).first()
+    #behavior = User.query.filter_by(behavior=request.form['behavior']).first()
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
