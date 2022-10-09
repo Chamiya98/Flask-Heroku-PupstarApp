@@ -259,6 +259,48 @@ def pastDataBehavior():
         insertRes=queryResult
     )
 
+@app.route('/insertdiseasePastData', methods=['GET', 'POST'], endpoint='insterdiseasepastdata')
+def pastDataBehavior():
+
+    #breedName = "Cindy"
+    #behavior = "Angry"
+
+    breedName = request.json['dogname']
+    behavior = request.json['disease']
+
+    #rint(request.values)
+    #print(breedName)
+    #breedName = User.query.filter_by(breedName=request.form['dogname']).first()
+    #behavior = User.query.filter_by(behavior=request.form['behavior']).first()
+
+    print(breedName, behavior)
+    if breedName == "" or behavior == "":
+        loginresult = "No Name Found"
+        queryResult = "Insertion Failed"
+    else:
+
+        today = date.today()
+        print("Today's date:", today)
+        cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
+        dogId = cursor1.fetchone()
+
+        insertdogId = int(dogId[0])
+        #dogId = int(dogId)
+        print("DogId:", dogId)
+        conn = db_connector()
+        query = ''' INSERT INTO diseasePastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
+        values = (behavior, today, insertdogId)
+
+        cur = conn.cursor()
+        cur.execute(query, values)
+        conn.commit()
+        loginresult = cur.rowcount
+        queryResult = "Inserted"
+
+    return jsonify(
+        message=loginresult,
+        insertRes=queryResult
+    )
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
@@ -503,6 +545,7 @@ def upload():
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
         result = "Disease is: " + pred_label_disease + "& Matching Probability is:" + str(breed_pred_prob_disease)
+        outdisease = pred_label_disease
         medications = []
         for txt in disease_prescriptions[pred_label_disease]:
             medications.append(txt)
@@ -511,7 +554,8 @@ def upload():
         # return Response(respons)
         return jsonify(
             Disease=result,
-            medications=medications
+            medications=medications,
+            outd=outdisease
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
