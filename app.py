@@ -6,7 +6,6 @@ import os
 import pickle
 import random
 import re
-from asyncio import subprocess
 from datetime import datetime, date
 
 import numpy as np
@@ -72,42 +71,15 @@ def random_number_with_date():
     return new_rand_no
 
 
-# def create_kerberos_ticket(user_name, domain_name, user_password):
-
-# ssh = subprocess.Popen(["kinit", f'{user_name}@{domain_name}'],
-# stdin =subprocess.PIPE,
-# stdout=subprocess.PIPE,
-# stderr=subprocess.PIPE,
-# universal_newlines=True,
-# bufsize=0)
-
-# ssh.stdin.write(f"{user_password}\n")
-# ssh.stdin.write("exit\n")
-# ssh.stdin.close()
-
 def db_connector():
-    # for windows
-    # cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
-    # "Server=34.143.213.182;"
-    # "Database=dogcare;"
-    # "Trusted_Connection=yes;")
-    # for client
-    # cnxn = pyodbc.connect(
-    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
-    # return cnxn
 
-    #cnxn = pyodbc.connect(
-     #   'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    # cnxn = pyodbc.connect(
+    #   'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
     cnxn = pyodbc.connect(
-     'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
 
-    # user_name = 'dogcare'
-    # user_password = 'dogcare123'
-    # domain_name = '34.143.213.182'
-
-    # create_kerberos_ticket(user_name, domain_name, user_password)
     return cnxn
 
 
@@ -230,7 +202,6 @@ def Login():
 
 @app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
 def dogList():
-
     dog_Array = []
     cursor1.execute("select Dogid, Full_Name from Dogs")
 
@@ -243,13 +214,11 @@ def dogList():
         message=dog_Array
     )
 
+
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-
-    breedName = request.args.get('dogname')
-    behavior = request.args.get('behavior')
-    #password = request.args.get('password')
-    #fullname = request.args.get('fullname')
+    breedName = request.values('dogname')
+    behavior = request.values('behavior')
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
@@ -260,8 +229,10 @@ def pastDataBehavior():
         today = date.today()
         print("Today's date:", today)
         cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
-        dogId = cursor1.fetchone()
-        print("DogId:" , dogId)
+        dogId = cursor1.fetchall()
+
+        dogId = int(dogId)
+        print("DogId:", dogId)
         conn = db_connector()
         query = ''' INSERT INTO behaviorPastData (behavior, Date) VALUES (?, ?)'''
         values = (behavior, today)
@@ -272,11 +243,9 @@ def pastDataBehavior():
         loginresult = cur.rowcount
         queryResult = "Inserted"
 
-
-
     return jsonify(
         message=loginresult,
-        insertRes= queryResult
+        insertRes=queryResult
     )
 
 
@@ -413,11 +382,9 @@ def upload():
                                                                                       img_url,
                                                                                       behavior_class_labels)
         # print(breed_pred_label + "Breed")
-        # return (breed_pred_label, breed_pred_prob)
         result = "Mood is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
         md = breed_pred_label
-        # return Response(response=result)
-        # return Response(respons)
+
         return jsonify(
             message=result,
             mood=md
@@ -1612,8 +1579,7 @@ class Text_Analysis():
 @app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
 def upload():
     resarr = []
-    # cursor1.execute(
-    # "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+
     cursor1.execute(
         "SELECT ClinicID, sum(Case when Type=1 then 1 else 0 end) as good, sum(Case when Type=0 then 1 else 0 end) as bad, sum(Case when Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments group by ClinicID ")
 
