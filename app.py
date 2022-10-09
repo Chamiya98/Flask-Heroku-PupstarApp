@@ -13,6 +13,7 @@ import pyodbc
 import tensorflow as tf
 # Flask utils
 from flask import Flask, redirect, render_template, request, flash, jsonify
+from gunicorn.config import User
 from keras.models import load_model
 from nltk import PorterStemmer
 from sklearn.decomposition import NMF
@@ -217,8 +218,11 @@ def dogList():
 
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-    breedName = request.args('dogname')
-    behavior = request.args('behavior')
+    #breedName = request.args('dogname')
+    #behavior = request.args('behavior')
+
+    breedName = User.query.filter_by(breedName=request.form['dogname']).first()
+    behavior = User.query.filter_by(behavior=request.form['behavior']).first()
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
