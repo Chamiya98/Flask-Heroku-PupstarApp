@@ -282,6 +282,23 @@ def getcmntlist():
         message=cmnts,
     )
 
+@app.route('/getspecificclinicdata', methods=['GET', 'POST'], endpoint='getspecificclinicdatalist')
+def getspecificclinicd():
+
+    clinicdata = []
+    clinicd = request.json['id']
+
+    print(clinicd)
+    cursor1.execute("select * from Comments where ClinicID= ?", (clinicd))
+    cmnt = cursor1.fetchall()
+
+    for row in cmnt:
+        clinicdata.append([x for x in row])
+
+    return jsonify(
+        message=clinicdata,
+    )
+
 @app.route('/insertdiseasePastData', methods=['GET', 'POST'], endpoint='insterdiseasepastdata')
 def pastDataBehavior():
 
