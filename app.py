@@ -218,8 +218,8 @@ def dogList():
 
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-    breedName = request.args.get('dogname')
-    behavior = request.args.get('behavior')
+    breedName = request.form['dogname']
+    behavior = request.form['behavior']
 
     #breedName = User.query.filter_by(breedName=request.form['dogname']).first()
     #behavior = User.query.filter_by(behavior=request.form['behavior']).first()
