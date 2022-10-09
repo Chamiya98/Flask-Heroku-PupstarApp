@@ -289,7 +289,7 @@ def getspecificclinicd():
     clinicd = request.json['id']
 
     print(clinicd)
-    cursor1.execute("select * from Comments where ClinicID= ?", (clinicd))
+    cursor1.execute("select * from clinics where ClinicID= ?", (clinicd))
     cmnt = cursor1.fetchall()
 
     for row in cmnt:
