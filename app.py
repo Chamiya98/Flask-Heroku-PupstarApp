@@ -235,7 +235,7 @@ def pastDataBehavior():
         cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
         dogId = cursor1.fetchall()
 
-        dogId = int(dogId)
+        #dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
         query = ''' INSERT INTO behaviorPastData (behavior, Date) VALUES (?, ?)'''
