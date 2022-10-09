@@ -37,7 +37,7 @@ model_behavior = load_model(MODEL_PATH_behavior)
 model_breed.make_predict_function()  # Necessary
 model_disease.make_predict_function()
 model_behavior.make_predict_function()
-# print('Model loaded. Start serving...')
+# print('Model loaded. Start serving...')re
 
 
 print('Model loaded. Check http://127.0.0.1:5000/')
@@ -257,6 +257,29 @@ def pastDataBehavior():
     return jsonify(
         message=loginresult,
         insertRes=queryResult
+    )
+
+@app.route('/getcommentsforclinic', methods=['GET', 'POST'], endpoint='getcommentsforclinics')
+def getcmntlist():
+
+    #breedName = "Cindy"
+    #behavior = "Angry"
+    cmnts = []
+    clinicId = request.json['id']
+
+    print(clinicId)
+
+
+    today = date.today()
+    print("Today's date:", today)
+    cursor1.execute("select * from Comments where ClinicID= ?", (clinicId))
+    cmnt = cursor1.fetchall()
+
+    for row in cmnt:
+        cmnts.append([x for x in row])
+
+    return jsonify(
+        message=cmnts,
     )
 
 @app.route('/insertdiseasePastData', methods=['GET', 'POST'], endpoint='insterdiseasepastdata')
