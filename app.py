@@ -216,14 +216,14 @@ def dogList():
     )
 
 
-@app.route('/insertbehaviorPastData', methods=['GET'], endpoint='insterbehaviorpastdata')
+@app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
 
-    breedName = "Cindy"
-    behavior = "Angry"
+    #breedName = "Cindy"
+    #behavior = "Angry"
 
-    #breedName = request.values['dogname']
-    #behavior = request.form['behavior']
+    breedName = request.json['dogname']
+    behavior = request.json['behavior']
 
     #rint(request.values)
     #print(breedName)
