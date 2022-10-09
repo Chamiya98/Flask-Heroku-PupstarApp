@@ -239,14 +239,14 @@ def pastDataBehavior():
         today = date.today()
         print("Today's date:", today)
         cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
-        dogId = int(cursor1.fetchone())
+        dogId = cursor1.fetchone()
 
-
+        insertdogId = int(dogId[0])
         #dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
         query = ''' INSERT INTO behaviorPastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
-        values = (behavior, today, dogId)
+        values = (behavior, today, insertdogId)
 
         cur = conn.cursor()
         cur.execute(query, values)
