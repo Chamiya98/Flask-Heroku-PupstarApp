@@ -239,7 +239,8 @@ def pastDataBehavior():
         today = date.today()
         print("Today's date:", today)
         cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
-        dogId = cursor1.fetchall()
+        dogId = int(cursor1.fetchone())
+
 
         #dogId = int(dogId)
         print("DogId:", dogId)
