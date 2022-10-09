@@ -217,8 +217,8 @@ def dogList():
 
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-    breedName = request.get('dogname')
-    behavior = request.get('behavior')
+    breedName = request.args('dogname')
+    behavior = request.args('behavior')
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
