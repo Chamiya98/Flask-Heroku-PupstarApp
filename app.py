@@ -177,6 +177,7 @@ def Login():
             loginresult = "Login_Failed"
 
     print(loginresult)
+    print(loggeduser)
 
     return jsonify(
         message=loginresult,
