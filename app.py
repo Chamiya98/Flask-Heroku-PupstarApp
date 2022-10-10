@@ -156,8 +156,9 @@ def clinic_images():
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
 def Login():
-    username1 = request.args.get('username')
-    password1 = request.args.get('password')
+
+    username1 = request.json['username']
+    password1 = request.json['password']
 
     if username1 == "" or password1 == "":
         loginresult = "Please fill the all fields !"
