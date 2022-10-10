@@ -163,15 +163,15 @@ def Login():
     print(username1, password1)
 
     if username1 == "" or password1 == "":
-        loginresult = "Please fill the all fields !"
+        loginresult = "Please_fill_the_all_fields_!"
     else:
         cursor1.execute("SELECT * FROM users WHERE username = ? AND password = ?",
                         (username1, password1))
         if cursor1.fetchone() is not None:
-            loginresult = "Login Succeeded"
+            loginresult = "Login_Succeeded"
         else:
 
-            loginresult = "Login Failed"
+            loginresult = "Login_Failed"
 
     print(loginresult)
 
