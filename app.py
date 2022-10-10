@@ -171,7 +171,7 @@ def Login():
             loginresult = "Login_Succeeded"
             cursor1.execute("SELECT fullname FROM users WHERE username = ? AND password = ?",
                             (username1, password1))
-            loggeduser = cursor1.execute()
+            loggeduser = cursor1.fetchone()
         else:
 
             loginresult = "Login_Failed"
