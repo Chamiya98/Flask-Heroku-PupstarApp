@@ -159,7 +159,7 @@ def Login():
 
     username1 = request.json['username']
     password1 = request.json['password']
-
+    loggeduser = ""
     print(username1, password1)
 
     if username1 == "" or password1 == "":
@@ -169,6 +169,9 @@ def Login():
                         (username1, password1))
         if cursor1.fetchone() is not None:
             loginresult = "Login_Succeeded"
+            cursor1.execute("SELECT fullname FROM users WHERE username = ? AND password = ?",
+                            (username1, username1))
+            loggeduser = str(cursor1.fetchone())
         else:
 
             loginresult = "Login_Failed"
@@ -176,7 +179,8 @@ def Login():
     print(loginresult)
 
     return jsonify(
-        message=loginresult
+        message=loginresult,
+        user=loggeduser
     )
 
 
