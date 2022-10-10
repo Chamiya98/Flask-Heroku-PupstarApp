@@ -438,6 +438,66 @@ def upload():
         return redirect(request.url)
 
 
+@app.route('/save_dog_details', methods=['GET', 'POST'], endpoint='breed')
+def save_dog_details():
+    if request.method == "POST":
+
+        id = random_number_with_date()
+        image = request.json['file']
+        detected_breed = request.json['detected_breed']
+        full_name = request.json['full_name']
+        weight = request.json['weight']
+        gender = request.json['gender']
+        pet_type = request.json['pet_type']
+        dob = request.json['dob']
+        user_email = request.json['user_email']
+
+        if (image == None or len(detected_breed) == 0 or len(full_name) == 0 or len(weight) == 0
+            or len(gender) == 0 or len(pet_type) == 0 or len(dob) == 0 or len(user_email) == 0):
+            return jsonify({'error': "Image not uploaded/Fill details"})
+
+        else:
+
+            uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
+
+            if not os.path.exists(uploaded_img_path):
+                os.makedirs(uploaded_img_path)
+
+            filename = str(id) + "_breed.png"
+            # filename = secure_filename(image.filename)
+
+            img_url = uploaded_img_path + filename
+            with open(img_url, "wb") as fh:
+                fh.write(base64.b64decode(image))
+
+            conn = db_connector()
+            query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
+            values = (str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email), str(filename))
+
+            cur = conn.cursor()
+            cur.execute(query, values)
+            conn.commit()
+            result = cur.rowcount
+
+            if result > 0:
+                return jsonify({'success': "Dog details added!"})
+
+            else:
+                return jsonify({'error': "Dog details not added!"})
+
+        # breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
+        #                                                                      breeds_class_labels)
+        # print(breed_pred_label + "Breed")
+        # return (breed_pred_label, breed_pred_prob)
+        # result = "Breed is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        # return Response(response=result)
+        # return Response(respons)
+        # return jsonify("message=result")
+    else:
+        flash('Allowed image types are - png, jpg, jpeg, gif')
+        return redirect(request.url)
+
+
 # -----------------------------Behaviour-------------------------------------------
 
 def get_prediction_probability_label_behavior(model, img_path, class_labels):
