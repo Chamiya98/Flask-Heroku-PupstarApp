@@ -427,7 +427,7 @@ def upload():
                                                                              breeds_class_labels)
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
-        result = "Breed is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        result = breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
         # return Response(response=result)
         # return Response(respons)
         return jsonify(
@@ -480,10 +480,10 @@ def save_dog_details():
             result = cur.rowcount
 
             if result > 0:
-                return jsonify({'success': "Dog details added!"})
+                return jsonify({"status": "success", 'message': "Dog details added!"})
 
             else:
-                return jsonify({'error': "Dog details not added!"})
+                return jsonify({"status": "error", 'message': "Dog details not added!"})
 
         # breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
         #                                                                      breeds_class_labels)
