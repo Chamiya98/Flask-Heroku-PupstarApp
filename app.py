@@ -438,7 +438,7 @@ def upload():
         return redirect(request.url)
 
 
-@app.route('/save_dog_details', methods=['GET', 'POST'], endpoint='breed')
+@app.route('/save_dog_details', methods=['GET', 'POST'], endpoint='save_dog_details')
 def save_dog_details():
     if request.method == "POST":
 
