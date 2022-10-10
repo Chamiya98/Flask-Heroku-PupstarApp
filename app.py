@@ -159,7 +159,7 @@ def Login():
 
     username1 = request.json['username']
     password1 = request.json['password']
-    #loggeduser = ""
+    loggeduser = ""
     print(username1, password1)
 
     if username1 == "" or password1 == "":
