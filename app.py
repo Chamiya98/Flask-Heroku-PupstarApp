@@ -97,7 +97,7 @@ def index():
 def petcare_page():
     return render_template("/clinics/pet_care.html")
 
-@app.route("/petcare2")
+@app.route("/petcare_2")
 def petcare_page():
     return render_template("/clinics/pet_care2.html")
 
