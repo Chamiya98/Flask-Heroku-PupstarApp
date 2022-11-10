@@ -106,6 +106,10 @@ def petcare_page():
 def petcare_page():
     return render_template("/clinics/pet_care3.html")
 
+@app.route("/petcare_4", endpoint='petcare_4')
+def petcare_page():
+    return render_template("/clinics/pet_care4.html")
+
 
 # Route for add comment
 @app.route('/add_comment', methods=['GET', 'POST'])
