@@ -102,7 +102,7 @@ def petcare_page():
     return render_template("/clinics/pet_care2.html")
 
 
-@app.route("/petcare_2", endpoint='petcare_3')
+@app.route("/petcare_3", endpoint='petcare_3')
 def petcare_page():
     return render_template("/clinics/pet_care3.html")
 
