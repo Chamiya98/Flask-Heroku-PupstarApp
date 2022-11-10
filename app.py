@@ -73,7 +73,6 @@ def random_number_with_date():
 
 
 def db_connector():
-
     # cnxn = pyodbc.connect(
     #   'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
@@ -97,9 +96,15 @@ def index():
 def petcare_page():
     return render_template("/clinics/pet_care.html")
 
+
 @app.route("/petcare_2", endpoint='petcare_2')
 def petcare_page():
     return render_template("/clinics/pet_care2.html")
+
+
+@app.route("/petcare_2", endpoint='petcare_3')
+def petcare_page():
+    return render_template("/clinics/pet_care3.html")
 
 
 # Route for add comment
@@ -160,12 +165,11 @@ def clinic_images():
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
 def Login():
-
     username1 = request.json['username']
     password1 = request.json['password']
     loggeduser = ""
 
-    usr=[]
+    usr = []
     print(username1, password1)
 
     if username1 == "" or password1 == "":
@@ -184,8 +188,6 @@ def Login():
         else:
 
             loginresult = "Login_Failed"
-
-
 
     print(loginresult)
     print(loggeduser)
@@ -239,17 +241,16 @@ def dogList():
 
 @app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
 def pastDataBehavior():
-
-    #breedName = "Cindy"
-    #behavior = "Angry"
+    # breedName = "Cindy"
+    # behavior = "Angry"
 
     breedName = request.json['dogname']
     behavior = request.json['behavior']
 
-    #rint(request.values)
-    #print(breedName)
-    #breedName = User.query.filter_by(breedName=request.form['dogname']).first()
-    #behavior = User.query.filter_by(behavior=request.form['behavior']).first()
+    # rint(request.values)
+    # print(breedName)
+    # breedName = User.query.filter_by(breedName=request.form['dogname']).first()
+    # behavior = User.query.filter_by(behavior=request.form['behavior']).first()
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
@@ -263,7 +264,7 @@ def pastDataBehavior():
         dogId = cursor1.fetchone()
 
         insertdogId = int(dogId[0])
-        #dogId = int(dogId)
+        # dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
         query = ''' INSERT INTO behaviorPastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
@@ -280,16 +281,15 @@ def pastDataBehavior():
         insertRes=queryResult
     )
 
+
 @app.route('/getcommentsforclinic', methods=['GET', 'POST'], endpoint='getcommentsforclinics')
 def getcmntlist():
-
-    #breedName = "Cindy"
-    #behavior = "Angry"
+    # breedName = "Cindy"
+    # behavior = "Angry"
     cmnts = []
     clinicId = request.json['id']
 
     print(clinicId)
-
 
     today = date.today()
     print("Today's date:", today)
@@ -303,9 +303,9 @@ def getcmntlist():
         message=cmnts,
     )
 
+
 @app.route('/getspecificclinicdata', methods=['GET', 'POST'], endpoint='getspecificclinicdatalist')
 def getspecificclinicd():
-
     clinicdata = []
     clinicd = request.json['id']
 
@@ -320,19 +320,19 @@ def getspecificclinicd():
         message=clinicdata,
     )
 
+
 @app.route('/insertdiseasePastData', methods=['GET', 'POST'], endpoint='insterdiseasepastdata')
 def pastDataBehavior():
-
-    #breedName = "Cindy"
-    #behavior = "Angry"
+    # breedName = "Cindy"
+    # behavior = "Angry"
 
     breedName = request.json['dogname']
     behavior = request.json['disease']
 
-    #rint(request.values)
-    #print(breedName)
-    #breedName = User.query.filter_by(breedName=request.form['dogname']).first()
-    #behavior = User.query.filter_by(behavior=request.form['behavior']).first()
+    # rint(request.values)
+    # print(breedName)
+    # breedName = User.query.filter_by(breedName=request.form['dogname']).first()
+    # behavior = User.query.filter_by(behavior=request.form['behavior']).first()
 
     print(breedName, behavior)
     if breedName == "" or behavior == "":
@@ -346,7 +346,7 @@ def pastDataBehavior():
         dogId = cursor1.fetchone()
 
         insertdogId = int(dogId[0])
-        #dogId = int(dogId)
+        # dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
         query = ''' INSERT INTO diseasePastData (disease, Date, dogId) VALUES (?, ?, ?)'''
@@ -362,6 +362,7 @@ def pastDataBehavior():
         message=loginresult,
         insertRes=queryResult
     )
+
 
 def get_prediction_probability_label(model, img_path, class_labels):
     img1 = tf.keras.utils.load_img(
@@ -457,7 +458,7 @@ def save_dog_details():
         user_email = request.json['user_email']
 
         if (image == None or len(detected_breed) == 0 or len(full_name) == 0 or len(weight) == 0
-            or len(gender) == 0 or len(pet_type) == 0 or len(dob) == 0 or len(user_email) == 0):
+                or len(gender) == 0 or len(pet_type) == 0 or len(dob) == 0 or len(user_email) == 0):
             return jsonify({'error': "Image not uploaded/Fill details"})
 
         else:
@@ -476,7 +477,9 @@ def save_dog_details():
 
             conn = db_connector()
             query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-            values = (str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email), str(filename))
+            values = (
+            str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
+            str(filename))
 
             cur = conn.cursor()
             cur.execute(query, values)
