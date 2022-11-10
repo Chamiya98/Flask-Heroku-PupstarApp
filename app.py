@@ -97,6 +97,10 @@ def index():
 def petcare_page():
     return render_template("/clinics/pet_care.html")
 
+@app.route("/petcare2")
+def petcare_page():
+    return render_template("/clinics/pet_care2.html")
+
 
 # Route for add comment
 @app.route('/add_comment', methods=['GET', 'POST'])
