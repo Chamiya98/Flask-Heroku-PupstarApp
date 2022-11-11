@@ -1,33 +1,30 @@
 from __future__ import division, print_function
 
-# coding=utf-8
 import array
 import pickle
 import re
 
 import pyodbc
-# import cv2
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-# mydb = mysql.connector.connect(
-#    host="localhost",
-#   user="root",
-#    password="B@uR3123#",
-#    database="dog_care"
-# )
-cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
-                      "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
-                      "Database=DogCare;"
-                      "Trusted_Connection=yes;")
 
-cursor = cnxn.cursor()
+def db_connector():
+    # for client
+    # cnxn = pyodbc.connect(
+    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    # return cnxn
 
-# mycursor = mydb.cursor()
-# Keras
+    # for server
+    cnxn = pyodbc.connect(
+        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
 
+    return cnxn
+
+
+cursor1 = db_connector().cursor()
 # Flask utils
 from flask import Flask, jsonify
 
@@ -39,18 +36,7 @@ app = Flask(__name__)
 # Model saved with Keras model.save()
 MODEL_PATH = 'model.sav'
 ModelPath2 = 'count_vectorizer.sav'
-# Load your trained model
-# model = pickle.load(open(MODEL_PATH, 'rb'))
-# model2 = pickle.load(open(ModelPath2, 'rb'))
-# model.make_predict_function()
-# model2.make_predict_function()  # Necessary
-# print('Model loaded. Start serving...')
 
-# You can also use pretrained model from Keras
-# Check https://keras.io/applications/
-# from keras.applications.resnet50 import ResNet50
-# model = ResNet50(weights='imagenet')
-# model.save('')
 print('Model loaded. Check http://127.0.0.1:5000/')
 
 # %% md
@@ -990,7 +976,7 @@ class Text_Analysis():
 
         model_filename = 'model.sav'
         count_vectorizer_filename = 'count_vectorizer.sav'
-        self.labels = ['Negative', 'Positive']
+        self.labels = ['Negative', 'Positive', 'Neutral']
 
         self.model = pickle.load(open(model_filename, 'rb'))
         self.count_vectorizer = pickle.load(open(count_vectorizer_filename, 'rb'))
@@ -1045,80 +1031,7 @@ class Text_Analysis():
         return topics_positive_comments, topics_negative_comments
 
 
-# %%
-# Example:
-
-# first create a object from Text_Analysis class
-# IMPORTANT : do this only once
 text_analysis = Text_Analysis()
-
-
-# Some example comments for sentiment analysis
-# no need to include these example comments
-# pos_input_text = 'i love this place'
-# pos_input_text = "Wowwwww nice one "
-# neg_input_text = 'i hate this place'
-# neg_input_text = "This is bad place"
-
-# get_sentiment_analysis_prediction function returns 0 or 1
-# 0 : comment classified as negative comment
-# 1 : comment classified as positive comment
-# sp = text_analysis.get_sentiment_analysis_prediction(pos_input_text)  # example for positive comment
-# sn = text_analysis.get_sentiment_analysis_prediction(neg_input_text)  # example for negative comment
-
-# print result
-# print(f'{pos_input_text}\n:{text_analysis.labels[sp]}')
-# print(f'{neg_input_text}\n:{text_analysis.labels[sn]}')
-# %%
-# Comments summarization
-# topics_positive_comments, topics_negative_comments = text_analysis.get_topics_positive_negative_comments(comments)
-# %%
-# for lst in topics_positive_comments:
-# print(lst)
-# %%
-# for lst in topics_negative_comments:
-# print(lst)
-
-
-# def separate_positive_negative_comments(self, comments):
-#     positive_comments = []
-#     negative_comments = []
-#     for comment in comments:
-#         if self.get_sentiment_analysis_prediction(comment) == 1:
-#             positive_comments.append(comment)
-#         else:
-#             negative_comments.append(comment)
-#
-#     return positive_comments, negative_comments
-
-# def get_topics_positive_negative_comments(self, comments):
-#     positive_comments, negative_comments = self.separate_positive_negative_comments(comments)
-#
-#     topics_positive_comments = self.get_topics_words(positive_comments)
-#     topics_negative_comments = self.get_topics_words(negative_comments)
-#
-#     return topics_positive_comments, topics_negative_comments
-
-
-# breeds_model_path = 'dog_breeds.h5'
-# # breeds_image_path = ''
-# breeds_class_labels = [
-#     'German shepherd',
-#     'Labrador retriever',
-#     'Golden retriever',
-#     'Rottweiler']
-#
-# UPLOAD_FOLDER = 'static/uploads/'
-#
-# app.secret_key = "secret key"
-# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-
-# ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif'])
-
-
-# def allowed_file(filename):
-#    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 
 @app.route('/comment', methods=['GET', 'POST'])
@@ -1130,9 +1043,9 @@ def upload():
     # global pos_input_text
     # if request.method == 'POST':
 
-    cursor.execute("Select content from comments")
+    cursor1.execute("Select content from comments")
 
-    result = cursor.fetchall()
+    result = cursor1.fetchall()
 
     for x in result:
         arr.append(x)
@@ -1146,7 +1059,7 @@ def upload():
         elif outputs == "Negative":
             badComments = int(badComments) + 1
 
-        else:
+        elif outputs == "neutral":
             unknownComments = int(unknownComments) + 1
 
     finalOutput = "Good comment Count: ", goodComments, "\n", "Bad comment Count: ", badComments, "\n", "unknown comments Count : ", unknownComments, "."

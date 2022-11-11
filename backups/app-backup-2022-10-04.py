@@ -1,19 +1,18 @@
 from __future__ import division, print_function
 
+import array
 import base64
-import glob
 import os
 import pickle
 import random
 import re
-from datetime import datetime, date
+from datetime import datetime
 
 import numpy as np
 import pyodbc
 import tensorflow as tf
 # Flask utils
-from flask import Flask, redirect, render_template, request, flash, jsonify
-from gunicorn.config import User
+from flask import Flask, redirect, request, flash, jsonify
 from keras.models import load_model
 from nltk import PorterStemmer
 from sklearn.decomposition import NMF
@@ -37,7 +36,7 @@ model_behavior = load_model(MODEL_PATH_behavior)
 model_breed.make_predict_function()  # Necessary
 model_disease.make_predict_function()
 model_behavior.make_predict_function()
-# print('Model loaded. Start serving...')re
+# print('Model loaded. Start serving...')
 
 
 print('Model loaded. Check http://127.0.0.1:5000/')
@@ -73,298 +72,68 @@ def random_number_with_date():
 
 
 def db_connector():
-    # cnxn = pyodbc.connect(
-    #   'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
-    # return cnxn
+    # for windows
+    cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                          "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+                          "Database=DogCare;"
+                          "Trusted_Connection=yes;")
 
-    cnxn = pyodbc.connect(
-        'DRIVER={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;TrustServerCertificate=yes')
+    #     # for linux
+    #     # cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
+    #     #  "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+    #     # "Database=DogCare;"
+    #     # "Trusted_Connection=yes;")
 
     return cnxn
 
 
-cursor1 = db_connector().cursor()
-
-
 # -----------------------WebsiteConnection---------------------------------------------
-@app.route("/")
-def index():
-    return render_template("index.html")
+# @app.route("/")
+# def index():
+#     return render_template("pet_rays_animal_clinic/index.html")
 
 
-@app.route("/petcare")
-def petcare_page():
-    return render_template("/clinics/pet_care.html")
+# # Route for add comment
+# @app.route('/add_comment', methods=['GET', 'POST'])
+# def add_comment():
 
+#     if request.method == "POST":
 
-@app.route("/petcare_2", endpoint='petcare_2')
-def petcare_page():
-    return render_template("/clinics/pet_care2.html")
+#         name = request.form.get('name')
+#         email = request.form.get('email')
+#         comment = request.form.get('comment')
+#         id = request.form.get('id')
 
+#         if len(name) == 0 or len(email) == 0 or len(comment) == 0 or len(id) == 0:
+#             return jsonify({'error': "Fields are empty!"})
 
-@app.route("/petcare_3", endpoint='petcare_3')
-def petcare_page():
-    return render_template("/clinics/pet_care3.html")
+#         else:
 
-@app.route("/petcare_4", endpoint='petcare_4')
-def petcare_page():
-    return render_template("/clinics/pet_care4.html")
+#             conn = db_connector()
+#             query = ''' INSERT INTO Comments (Name, Email, Content, ClinicID) VALUES (%s, %s, %s, %s)'''
+#             values = (int(name), str(email), str(comment), str(id))
 
-#test
-# Route for add comment
-@app.route('/add_comment', methods=['GET', 'POST'])
-def add_comment():
-    if request.method == "POST":
+#             cur = conn.cursor()
+#             cur.execute(query, values)
+#             conn.commit()
+#             result = cur.rowcount
 
-        name = request.form.get('name')
-        email = request.form.get('email')
-        comment = request.form.get('comment')
-        clinic_id = request.form.get('id')
+#             if result > 0:
+#                 return jsonify({'success': "Comment added!"})
 
-        print(name)
+#             else:
+#                 return jsonify({'error': "Comment not added!"})
 
-        comment_id = int(random_number())
-        comment_type = 2  # Already set unknown
-
-        if len(name) == 0 or len(email) == 0 or len(comment) == 0 or len(clinic_id) == 0:
-            return jsonify({'error': "Fields are empty!"})
-
-        else:
-
-            sp = text_analysis.get_sentiment_analysis_prediction(str(comment))
-            outputs = f'{text_analysis.labels[sp]}'
-
-            if outputs == "Positive":
-                comment_type = 1
-
-            elif outputs == "Negative":
-                comment_type = 0
-
-            conn = db_connector()
-            query = ''' INSERT INTO Comments (CommentID, Name, Email, ClinicID, Content, Type) VALUES (?, ?, ?, ?, ?, ?)'''
-            values = (comment_id, str(name), str(email), int(clinic_id), str(comment), int(comment_type))
-
-            cur = conn.cursor()
-            cur.execute(query, values)
-            conn.commit()
-            result = cur.rowcount
-
-            if result > 0:
-                return jsonify({'success': "Comment added!"})
-
-            else:
-                return jsonify({'error': "Comment not added!"})
-
-    return jsonify("Invalid")
-
-
-@app.route("/clinic_images")
-def clinic_images():
-    images_list = []
-    for file in glob.glob('static/images/images/team/*.jpg'):
-        images_list.append(file)
-
-    return jsonify(images_list)
+#     return jsonify("Invalid")
 
 
 @app.route('/login', methods=['GET', 'POST'], endpoint='login')
-def Login():
-    username1 = request.json['username']
-    password1 = request.json['password']
-    loggeduser = ""
-
-    usr = []
-    print(username1, password1)
-
-    if username1 == "" or password1 == "":
-        loginresult = "Please_fill_the_all_fields_!"
-    else:
-        cursor1.execute("SELECT * FROM users WHERE username = ? AND password = ?",
-                        (username1, password1))
-        if cursor1.fetchone() is not None:
-            loginresult = "Login_Succeeded"
-            cursor1.execute("SELECT fullname FROM users WHERE username = ? AND password = ?",
-                            (username1, password1))
-            loggeduser = cursor1.fetchone()
-
-            for row in loggeduser:
-                usr.append([x for x in row])
-        else:
-
-            loginresult = "Login_Failed"
-
-    print(loginresult)
-    print(loggeduser)
+def upload():
+    result = "This is from flask"
+    print("This is my app")
 
     return jsonify(
-        message=loginresult,
-        user=usr
-    )
-
-
-@app.route('/signup', methods=['GET', 'POST'], endpoint='signup')
-def Login():
-    email = request.args.get('email')
-    password = request.args.get('password')
-    fullname = request.args.get('fullname')
-
-    if email == "" or password == "" or fullname == "":
-        loginresult = "Please fill the all fields !"
-        queryResult = "Insertion Failed"
-    else:
-        conn = db_connector()
-        query = ''' INSERT INTO users (username, password, fullname) VALUES (?, ?, ?)'''
-        values = (email, password, fullname)
-
-        cur = conn.cursor()
-        cur.execute(query, values)
-        conn.commit()
-        loginresult = cur.rowcount
-        queryResult = "Inserted"
-        # result = cur.rowcount
-    return jsonify(
-        message=loginresult,
-        qresult=queryResult
-    )
-
-
-@app.route('/getDoglist', methods=['GET', 'POST'], endpoint='dogList')
-def dogList():
-    dog_Array = []
-    cursor1.execute("select Dogid, Full_Name from Dogs")
-
-    testt = cursor1.fetchall()
-
-    for row in testt:
-        dog_Array.append([x for x in row])
-
-    return jsonify(
-        message=dog_Array
-    )
-
-
-@app.route('/insertbehaviorPastData', methods=['GET', 'POST'], endpoint='insterbehaviorpastdata')
-def pastDataBehavior():
-    # breedName = "Cindy"
-    # behavior = "Angry"
-
-    breedName = request.json['dogname']
-    behavior = request.json['behavior']
-
-    # rint(request.values)
-    # print(breedName)
-    # breedName = User.query.filter_by(breedName=request.form['dogname']).first()
-    # behavior = User.query.filter_by(behavior=request.form['behavior']).first()
-
-    print(breedName, behavior)
-    if breedName == "" or behavior == "":
-        loginresult = "No Name Found"
-        queryResult = "Insertion Failed"
-    else:
-
-        today = date.today()
-        print("Today's date:", today)
-        cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
-        dogId = cursor1.fetchone()
-
-        insertdogId = int(dogId[0])
-        # dogId = int(dogId)
-        print("DogId:", dogId)
-        conn = db_connector()
-        query = ''' INSERT INTO behaviorPastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
-        values = (behavior, today, insertdogId)
-
-        cur = conn.cursor()
-        cur.execute(query, values)
-        conn.commit()
-        loginresult = cur.rowcount
-        queryResult = "Inserted"
-
-    return jsonify(
-        message=loginresult,
-        insertRes=queryResult
-    )
-
-
-@app.route('/getcommentsforclinic', methods=['GET', 'POST'], endpoint='getcommentsforclinics')
-def getcmntlist():
-    # breedName = "Cindy"
-    # behavior = "Angry"
-    cmnts = []
-    clinicId = request.json['id']
-
-    print(clinicId)
-
-    today = date.today()
-    print("Today's date:", today)
-    cursor1.execute("select * from Comments where ClinicID= ?", (clinicId))
-    cmnt = cursor1.fetchall()
-
-    for row in cmnt:
-        cmnts.append([x for x in row])
-
-    return jsonify(
-        message=cmnts,
-    )
-
-
-@app.route('/getspecificclinicdata', methods=['GET', 'POST'], endpoint='getspecificclinicdatalist')
-def getspecificclinicd():
-    clinicdata = []
-    clinicd = request.json['id']
-
-    print(clinicd)
-    cursor1.execute("select * from clinics where ClinicID= ?", (clinicd))
-    cmnt = cursor1.fetchall()
-
-    for row in cmnt:
-        clinicdata.append([x for x in row])
-
-    return jsonify(
-        message=clinicdata,
-    )
-
-
-@app.route('/insertdiseasePastData', methods=['GET', 'POST'], endpoint='insterdiseasepastdata')
-def pastDataBehavior():
-    # breedName = "Cindy"
-    # behavior = "Angry"
-
-    breedName = request.json['dogname']
-    behavior = request.json['disease']
-
-    # rint(request.values)
-    # print(breedName)
-    # breedName = User.query.filter_by(breedName=request.form['dogname']).first()
-    # behavior = User.query.filter_by(behavior=request.form['behavior']).first()
-
-    print(breedName, behavior)
-    if breedName == "" or behavior == "":
-        loginresult = "No Name Found"
-        queryResult = "Insertion Failed"
-    else:
-
-        today = date.today()
-        print("Today's date:", today)
-        cursor1.execute("select Dogid from Dogs where Full_Name= ?", (breedName))
-        dogId = cursor1.fetchone()
-
-        insertdogId = int(dogId[0])
-        # dogId = int(dogId)
-        print("DogId:", dogId)
-        conn = db_connector()
-        query = ''' INSERT INTO diseasePastData (disease, Date, dogId) VALUES (?, ?, ?)'''
-        values = (behavior, today, insertdogId)
-
-        cur = conn.cursor()
-        cur.execute(query, values)
-        conn.commit()
-        loginresult = cur.rowcount
-        queryResult = "Inserted"
-
-    return jsonify(
-        message=loginresult,
-        insertRes=queryResult
+        message=result,
     )
 
 
@@ -436,74 +205,12 @@ def upload():
                                                                              breeds_class_labels)
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
-        result = breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        result = "Breed is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
         # return Response(response=result)
         # return Response(respons)
         return jsonify(
             message=result
         )
-    else:
-        flash('Allowed image types are - png, jpg, jpeg, gif')
-        return redirect(request.url)
-
-
-@app.route('/save_dog_details', methods=['GET', 'POST'], endpoint='save_dog_details')
-def save_dog_details():
-    if request.method == "POST":
-
-        id = random_number_with_date()
-        image = request.json['file']
-        detected_breed = request.json['detected_breed']
-        full_name = request.json['full_name']
-        weight = request.json['weight']
-        gender = request.json['gender']
-        pet_type = request.json['pet_type']
-        dob = request.json['dob']
-        user_email = request.json['user_email']
-
-        if (image == None or len(detected_breed) == 0 or len(full_name) == 0 or len(weight) == 0
-                or len(gender) == 0 or len(pet_type) == 0 or len(dob) == 0 or len(user_email) == 0):
-            return jsonify({'error': "Image not uploaded/Fill details"})
-
-        else:
-
-            uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
-
-            if not os.path.exists(uploaded_img_path):
-                os.makedirs(uploaded_img_path)
-
-            filename = str(id) + "_breed.png"
-            # filename = secure_filename(image.filename)
-
-            img_url = uploaded_img_path + filename
-            with open(img_url, "wb") as fh:
-                fh.write(base64.b64decode(image))
-
-            conn = db_connector()
-            query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'''
-            values = (
-            str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
-            str(filename))
-
-            cur = conn.cursor()
-            cur.execute(query, values)
-            conn.commit()
-            result = cur.rowcount
-
-            if result > 0:
-                return jsonify({"status": "success", 'message': "Dog details added!"})
-
-            else:
-                return jsonify({"status": "error", 'message': "Dog details not added!"})
-
-        # breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
-        #                                                                      breeds_class_labels)
-        # print(breed_pred_label + "Breed")
-        # return (breed_pred_label, breed_pred_prob)
-        # result = "Breed is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
-        # return Response(response=result)
-        # return Response(respons)
-        # return jsonify("message=result")
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
         return redirect(request.url)
@@ -563,12 +270,12 @@ def upload():
                                                                                       img_url,
                                                                                       behavior_class_labels)
         # print(breed_pred_label + "Breed")
+        # return (breed_pred_label, breed_pred_prob)
         result = "Mood is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
-        md = breed_pred_label
-
+        # return Response(response=result)
+        # return Response(respons)
         return jsonify(
-            message=result,
-            mood=md
+            message=result
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
@@ -673,7 +380,6 @@ def upload():
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
         result = "Disease is: " + pred_label_disease + "& Matching Probability is:" + str(breed_pred_prob_disease)
-        outdisease = pred_label_disease
         medications = []
         for txt in disease_prescriptions[pred_label_disease]:
             medications.append(txt)
@@ -682,8 +388,7 @@ def upload():
         # return Response(respons)
         return jsonify(
             Disease=result,
-            medications=medications,
-            outd=outdisease
+            medications=medications
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
@@ -1680,97 +1385,110 @@ class Text_Analysis():
         return topics_positive_comments, topics_negative_comments
 
 
-# @app.route('/comment', methods=['GET', 'POST'], endpoint='textAnalysis')
-# def upload():
-#     good_comments = int(0)
-#     bad_comments = int(0)
-#     unknown_comments = int(0)
-#     arr = array.posnegComments = []
-#     # t = []
-#     # global pos_input_text
-#     # if request.method == 'POST':
-#     con = db_connector()
-#     cursor = con.cursor()
-#     cursor.execute("Select ClinicID from clinics")
-#     counter = 1
-#     # t.append(mycursor.fetchall())
+# for windows
+cnxn = pyodbc.connect("Driver={SQL Server Native Client 11.0};"
+                      "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+                      "Database=DogCare;"
+                      "Trusted_Connection=yes;")
 
-#     t = cursor.fetchall()
+# for linux
+# cnxn = pyodbc.connect("Driver={/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1};"
+#  "Server=LAPTOP-STJ47PM1\SQLEXPRESS;"
+# "Database=DogCare;"
+# "Trusted_Connection=yes;")
 
-#     print(t)
+cursor = cnxn.cursor()
 
-#     # Dict = {1: 'Geeks', 2: 'For', 3: 'Geeks'}
-#     # i = 0
-#     # i: object
-#     for i in t:
 
-#         print("ClinicId:", i)
-#         cursor.execute('''SELECT Content FROM Comments WHERE ClinicID = ?''', i[0])
-#         # getclinic = "Select Content from Comments where ClinicID=%s"
-#         # values = (i)
-#         # cursor.execute(getclinic, values)
+@app.route('/comment', methods=['GET', 'POST'], endpoint='textAnalysis')
+def upload():
+    good_comments = int(0)
+    bad_comments = int(0)
+    unknown_comments = int(0)
+    arr = array.posnegComments = []
+    # t = []
+    # global pos_input_text
+    # if request.method == 'POST':
+    con = db_connector()
+    cursor = con.cursor()
+    cursor.execute("Select ClinicID from clinics")
+    counter = 1
+    # t.append(mycursor.fetchall())
 
-#         result = cursor.fetchall()
+    t = cursor.fetchall()
 
-#         for x in result:
-#             arr.append(x)
-#             sp = text_analysis.get_sentiment_analysis_prediction(str(x))
-#             outputs = f'{text_analysis.labels[sp]}'
-#             print(outputs)
-#             if outputs == "Positive":
+    print(t)
 
-#                 good_comments = int(good_comments) + 1
+    # Dict = {1: 'Geeks', 2: 'For', 3: 'Geeks'}
+    # i = 0
+    # i: object
+    for i in t:
 
-#             elif outputs == "Negative":
-#                 bad_comments = int(bad_comments) + 1
+        print("ClinicId:", i)
+        cursor.execute('''SELECT Content FROM Comments WHERE ClinicID = ?''', i[0])
+        # getclinic = "Select Content from Comments where ClinicID=%s"
+        # values = (i)
+        # cursor.execute(getclinic, values)
 
-#             else:
-#                 unknown_comments = int(unknown_comments) + 1
+        result = cursor.fetchall()
 
-#         final_output = "Clinic Id:", counter, "Good comment Count: ", good_comments, "\n", "Bad comment Count: ", bad_comments, "\n", "unknown comments Count : ", unknown_comments, "."
-#         print(final_output)
-#         sql = '''Insert Into comment_analysis(ID, good_comment_count, bad_comment_count, unknown_comment_count, ClinicID) Values (?, ?, ?, ?, ?)'''
-#         val = (int(random_number()), good_comments, bad_comments, unknown_comments, counter)
-#         cursor.execute(sql, val)
-#         db_connector().commit()
-#         queryresult = cursor.rowcount
-#         print(queryresult)
+        for x in result:
+            arr.append(x)
+            sp = text_analysis.get_sentiment_analysis_prediction(str(x))
+            outputs = f'{text_analysis.labels[sp]}'
+            print(outputs)
+            if outputs == "Positive":
 
-#         good_comments = int(0)
-#         bad_comments = int(0)
-#         unknown_comments = int(0)
+                good_comments = int(good_comments) + 1
 
-#         # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
-#         # print(arr)
-#         # for lst in postrendingWords:
-#         # print(lst)
-#         # %%
-#         # for lst in negtendingwords:
-#         # print(lst)
-#         counter += 1
-#     return jsonify(
-#         Result=final_output
-#         # Result=final_output
-#         # POStopicWords=postrendingWords,
-#         # NEGtopicWords=negtendingwords
-#     )
-#     # i = + 1
-#     # i = + 1
+            elif outputs == "Negative":
+                bad_comments = int(bad_comments) + 1
+
+            else:
+                unknown_comments = int(unknown_comments) + 1
+
+        final_output = "Clinic Id:", counter, "Good comment Count: ", good_comments, "\n", "Bad comment Count: ", bad_comments, "\n", "unknown comments Count : ", unknown_comments, "."
+        print(final_output)
+        sql = '''Insert Into comment_analysis(ID, good_comment_count, bad_comment_count, unknown_comment_count, ClinicID) Values (?, ?, ?, ?, ?)'''
+        val = (int(random_number()), good_comments, bad_comments, unknown_comments, counter)
+        cursor.execute(sql, val)
+        db_connector().commit()
+        queryresult = cursor.rowcount
+        print(queryresult)
+
+        good_comments = int(0)
+        bad_comments = int(0)
+        unknown_comments = int(0)
+
+        # postrendingWords, negtendingwords = text_analysis.get_topics_positive_negative_comments(str(arr))
+        # print(arr)
+        # for lst in postrendingWords:
+        # print(lst)
+        # %%
+        # for lst in negtendingwords:
+        # print(lst)
+        counter += 1
+    return jsonify(
+        Result=final_output
+        # Result=final_output
+        # POStopicWords=postrendingWords,
+        # NEGtopicWords=negtendingwords
+    )
+    # i = + 1
+    # i = + 1
 
 
 # i = +1
 @app.route('/getCinicList', methods=['GET', 'POST'], endpoint='cliniclist')
 def upload():
     resarr = []
-
-    cursor1.execute(
-        "SELECT cm.ClinicID,c.Name,c.Address, c.imageref,  sum(Case when cm.Type=1 then 1 else 0 end) as good, sum(Case when cm.Type=0 then 1 else 0 end) as bad, sum(Case when cm.Type=2 then 1 else 0 end) as unknown, count(*) as all_count FROM Comments cm inner join clinics c on c.ClinicID = cm.ClinicID group by cm.ClinicID, c.Name, c.Address, c.imageref")
-
-    testt = cursor1.fetchall()
+    # result = "This is from flask"
+    cursor.execute(
+        "Select cm.ID, cm.good_comment_count, cm.bad_comment_count, cm.unknown_comment_count, cm.ClinicID, c.Name, c.Address from comment_analysis cm inner join clinics c on c.ClinicID = cm.ClinicID")
+    testt = cursor.fetchall()
     # json_output = json.dumps(testt)
     for row in testt:
-        resarr.append([x for x in row])
-    resarr  # or simply data.append(list(row))
+        resarr.append([x for x in row])  # or simply data.append(list(row))
     return jsonify(
         message=resarr,
     )
