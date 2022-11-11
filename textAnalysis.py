@@ -1059,7 +1059,7 @@ def upload():
         elif outputs == "Negative":
             badComments = int(badComments) + 1
 
-        elif outputs == "Neutral":
+        elif outputs == "neutral":
             unknownComments = int(unknownComments) + 1
 
     finalOutput = "Good comment Count: ", goodComments, "\n", "Bad comment Count: ", badComments, "\n", "unknown comments Count : ", unknownComments, "."
