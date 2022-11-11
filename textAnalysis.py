@@ -10,8 +10,8 @@ from nltk.stem.porter import PorterStemmer
 from sklearn.decomposition import NMF
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-def db_connector():
 
+def db_connector():
     # for client
     # cnxn = pyodbc.connect(
     # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
@@ -976,7 +976,7 @@ class Text_Analysis():
 
         model_filename = 'model.sav'
         count_vectorizer_filename = 'count_vectorizer.sav'
-        self.labels = ['Negative', 'Positive']
+        self.labels = ['Negative', 'Positive', 'Neutral']
 
         self.model = pickle.load(open(model_filename, 'rb'))
         self.count_vectorizer = pickle.load(open(count_vectorizer_filename, 'rb'))
