@@ -1841,7 +1841,7 @@ def upload():
 def upload():
     resarr = []
 
-    cursor1.execute("select d.Full_Name, bp.behavior, bp.Date from behaviorPastData bp inner join Dogs d on d.Dogid = bp.dogId")
+    cursor1.execute("select d.Full_Name, bp.behavior, bp.Date, bp.imageprefix from behaviorPastData bp inner join Dogs d on d.Dogid = bp.dogId")
 
     testt = cursor1.fetchall()
     # json_output = json.dumps(testt)
