@@ -250,6 +250,7 @@ def pastDataBehavior():
 
     breedName = request.json['dogname']
     behavior = request.json['behavior']
+    imgprefix = request.json['randomimgid']
 
     # rint(request.values)
     # print(breedName)
@@ -271,8 +272,8 @@ def pastDataBehavior():
         # dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
-        query = ''' INSERT INTO behaviorPastData (behavior, Date, dogId) VALUES (?, ?, ?)'''
-        values = (behavior, today, insertdogId)
+        query = ''' INSERT INTO behaviorPastData (behavior, Date, dogId, imagePrefix) VALUES (?, ?, ?, ?)'''
+        values = (behavior, today, insertdogId, imgprefix)
 
         cur = conn.cursor()
         cur.execute(query, values)
@@ -591,12 +592,16 @@ behavior_class_labels = [
     'Sad']
 
 
+imagePrefix = 0;
 @app.route('/behaviormain', methods=['GET', 'POST'], endpoint='behavior')
 def upload():
+
     if request.method == "POST":
 
         id = random_number_with_date()
         image = request.json['file']
+
+        #imagePrefix = id
 
         if image == None:
             return jsonify({'error': "Image not uploaded"})
@@ -623,7 +628,8 @@ def upload():
 
         return jsonify(
             message=result,
-            mood=md
+            mood=md,
+            randomid=id
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
