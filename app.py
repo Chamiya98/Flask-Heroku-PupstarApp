@@ -1829,6 +1829,22 @@ def upload():
     return jsonify(
         message=resarr,
     )
+###########################################################################################################################################################################################################################################
+
+@app.route('/getPreviousBehaviors', methods=['GET', 'POST'], endpoint='PreviousBehaviors')
+def upload():
+    resarr = []
+
+    cursor1.execute("select d.Full_Name, bp.behavior, bp.Date from behaviorPastData bp inner join Dogs d on d.Dogid = bp.dogId")
+
+    testt = cursor1.fetchall()
+    # json_output = json.dumps(testt)
+    for row in testt:
+        resarr.append([x for x in row])
+    resarr  # or simply data.append(list(row))
+    return jsonify(
+        message=resarr,
+    )
 
 
 if __name__ == '__main__':
