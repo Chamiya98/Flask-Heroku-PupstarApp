@@ -110,7 +110,7 @@ def petcare_page():
 def petcare_page():
     return render_template("/clinics/pet_care4.html")
 
-
+#test
 # Route for add comment
 @app.route('/add_comment', methods=['GET', 'POST'])
 def add_comment():
