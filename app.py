@@ -496,7 +496,8 @@ def upload():
         # return Response(response=result)
         # return Response(respons)
         return jsonify(
-            message=result
+            message=result,
+            randimageid=id
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
@@ -523,23 +524,23 @@ def save_dog_details():
 
         else:
 
-            uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
+            #uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
 
-            if not os.path.exists(uploaded_img_path):
-                os.makedirs(uploaded_img_path)
+            #if not os.path.exists(uploaded_img_path):
+                #os.makedirs(uploaded_img_path)
 
-            filename = str(id) + "_breed.png"
+            #filename = str(id) + "_breed.png"
             # filename = secure_filename(image.filename)
 
-            img_url = uploaded_img_path + filename
-            with open(img_url, "wb") as fh:
-                fh.write(base64.b64decode(image))
+            #img_url = uploaded_img_path + filename
+            #with open(img_url, "wb") as fh:
+                #fh.write(base64.b64decode(image))
 
             conn = db_connector()
             query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
             values = (
             str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
-            str(id))
+            str(image))
 
             cur = conn.cursor()
             cur.execute(query, values)
