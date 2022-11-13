@@ -539,7 +539,7 @@ def save_dog_details():
             query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
             values = (
             str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
-            str(filename))
+            str(id))
 
             cur = conn.cursor()
             cur.execute(query, values)
