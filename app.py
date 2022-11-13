@@ -1852,6 +1852,20 @@ def upload():
         message=resarr,
     )
 
+@app.route('/getEntireDogList', methods=['GET', 'POST'], endpoint='EntireDogs')
+def dogList():
+    dog_Array = []
+    cursor1.execute("select Full_Name, Breed, ImageName from Dogs")
+
+    testt = cursor1.fetchall()
+
+    for row in testt:
+        dog_Array.append([x for x in row])
+
+    return jsonify(
+        message=dog_Array
+    )
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
