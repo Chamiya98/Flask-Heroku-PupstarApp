@@ -1916,17 +1916,21 @@ def dogList():
 
     testt = cursor1.fetchall()
 
-    cursor1.execute("select * from Dogs")
+    cursor1.execute("SELECT * FROM (SELECT d.Dogid as ID, d.Full_Name, getdate() as CurrentDate, datediff(YY,d.DOB,getdate()) * 365 as age, fv.description, fv.agerange, fv.ageMin as AgeMin, fv.ageMax as AgeMax from Dogs d inner join Breeds br on br.breedname = d.Breed inner join foodsAndVitamins fv on fv.breedid = br.id) as innerTable WHERE age between AgeMin and AgeMax")
 
-    dogs = cursor1.fetchall()
+    foodsAndVitamins = cursor1.fetchall()
 
-    print(dogs.index(1))
+    #print(dogs.index())
 
     for row in testt:
         dog_Array.append([x for x in row])
 
+    for rr in foodsAndVitamins:
+        vitaminArray.append([x for x in rr])
+
     return jsonify(
-        message=dog_Array
+        message=dog_Array,
+        Vitamins=vitaminArray
     )
 
 
