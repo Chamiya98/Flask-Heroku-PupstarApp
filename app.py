@@ -1916,6 +1916,12 @@ def dogList():
 
     testt = cursor1.fetchall()
 
+    cursor1.execute("select * from Dogs")
+
+    dogs = cursor1.fetchall()
+
+    print(dogs)
+
     for row in testt:
         dog_Array.append([x for x in row])
 
