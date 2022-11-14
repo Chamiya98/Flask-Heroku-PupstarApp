@@ -850,7 +850,7 @@ def upload():
         outdisease = pred_label_disease
         medications = []
 
-        if "Cannot mmake predictions" not in pred_label_disease:
+        if 'Cannot mmake predictions for human images.' not in pred_label_disease:
             for txt in disease_prescriptions[pred_label_disease]:
                 medications.append(txt)
                 print(txt)
