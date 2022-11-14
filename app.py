@@ -13,7 +13,7 @@ import pyodbc
 import tensorflow as tf
 # Flask utils
 from flask import Flask, redirect, render_template, request, flash, jsonify
-#from gunicorn.config import User
+# from gunicorn.config import User
 from keras.models import load_model
 from nltk import PorterStemmer
 from sklearn.decomposition import NMF
@@ -73,8 +73,8 @@ def random_number_with_date():
 
 
 def db_connector():
-    #cnxn = pyodbc.connect(
-    #'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
+    # cnxn = pyodbc.connect(
+    # 'DRIVER={SQL Server};SERVER=34.143.213.182;DATABASE=dogcare;UID=sqlserver;PWD=dogcare123;Trusted_Connection=no')
     # return cnxn
 
     cnxn = pyodbc.connect(
@@ -106,11 +106,13 @@ def petcare_page():
 def petcare_page():
     return render_template("/clinics/pet_care3.html")
 
+
 @app.route("/petcare_4", endpoint='petcare_4')
 def petcare_page():
     return render_template("/clinics/pet_care4.html")
 
-#test
+
+# test
 # Route for add comment
 @app.route('/add_comment', methods=['GET', 'POST'])
 def add_comment():
@@ -434,20 +436,19 @@ def upload():
                 fh.write(base64.b64decode(image))
 
             import cv2
-            #from google.colab.patches import cv2_imshow
+            # from google.colab.patches import cv2_imshow
             import matplotlib.pyplot as plt
-            #from google.colab import files
-            #% matplotlib
-            #inline
+            # from google.colab import files
+            # % matplotlib
+            # inline
 
-            #from google.colab import drive
-            #drive.mount('/content/gdrive')
+            # from google.colab import drive
+            # drive.mount('/content/gdrive')
 
-
-            #!wget --no-check-certificate \
-             # extract pre-trained face detector
+            # !wget --no-check-certificate \
+            # extract pre-trained face detector
             face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-            #face_cascade = cv2.CascadeClassifier('haarcascade_frontalcatface.xml')
+            # face_cascade = cv2.CascadeClassifier('haarcascade_frontalcatface.xml')
             # cat_cascade = cv2.CascadeClassifier('haarcascade_frontalcatface.xml')
             print(face_cascade)
 
@@ -456,8 +457,8 @@ def upload():
             # convert BGR image to grayscale
             # !wget --no-check-certificate \
             gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-            #!wget - -no - check - certificate \
-                    #https: // raw.githubusercontent.com / computationalcore / introduction - to - opencv / master / assets / haarcascade_frontalface_default.xml
+            # !wget - -no - check - certificate \
+            # https: // raw.githubusercontent.com / computationalcore / introduction - to - opencv / master / assets / haarcascade_frontalface_default.xml
             # find faces in image
             faces = face_cascade.detectMultiScale(gray)
             # cats = cat_cascade.detectMultiScale(gray, scaleFactor=1.3,
@@ -480,18 +481,18 @@ def upload():
 
             # Make predictions
             if len(faces) == 0:
-                #breed_pred_label, breed_pred_prob = get_prediction_probability_label(breeds_model, breeds_image_path,
-                                                                                     #breeds_class_labels)
+                # breed_pred_label, breed_pred_prob = get_prediction_probability_label(breeds_model, breeds_image_path,
+                # breeds_class_labels)
                 breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
                                                                                      breeds_class_labels)
             elif len(faces) > 0:
                 breed_pred_prob = 0;
-                breed_pred_label = 'Cannot mmake predictions for human images. Number of faces detected:', len(faces), 'faces detected.'
-
+                breed_pred_label = 'Cannot mmake predictions for human images. Number of faces detected:', len(
+                    faces), 'faces detected.'
 
         # print(breed_pred_label + "Breed")
         # return (breed_pred_label, breed_pred_prob)
-        #result = breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        # result = breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
         result = breed_pred_label
         # return Response(response=result)
         # return Response(respons)
@@ -524,23 +525,23 @@ def save_dog_details():
 
         else:
 
-            #uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
+            # uploaded_img_path = APP_ROOT + '/static/uploads/breed/detected/'
 
-            #if not os.path.exists(uploaded_img_path):
-                #os.makedirs(uploaded_img_path)
+            # if not os.path.exists(uploaded_img_path):
+            # os.makedirs(uploaded_img_path)
 
-            #filename = str(id) + "_breed.png"
+            # filename = str(id) + "_breed.png"
             # filename = secure_filename(image.filename)
 
-            #img_url = uploaded_img_path + filename
-            #with open(img_url, "wb") as fh:
-                #fh.write(base64.b64decode(image))
+            # img_url = uploaded_img_path + filename
+            # with open(img_url, "wb") as fh:
+            # fh.write(base64.b64decode(image))
 
             conn = db_connector()
             query = ''' INSERT INTO Dogs (Full_Name, Breed, Weight, Gender, Species, DOB, UserEmail, ImageName) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'''
             values = (
-            str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
-            str(image))
+                str(full_name), str(detected_breed), str(weight), str(gender), str(pet_type), str(dob), str(user_email),
+                str(image))
 
             cur = conn.cursor()
             cur.execute(query, values)
@@ -592,17 +593,17 @@ behavior_class_labels = [
     'Happy',
     'Sad']
 
-
 imagePrefix = 0;
+
+
 @app.route('/behaviormain', methods=['GET', 'POST'], endpoint='behavior')
 def upload():
-
     if request.method == "POST":
 
         id = random_number_with_date()
         image = request.json['file']
 
-        #imagePrefix = id
+        # imagePrefix = id
 
         if image == None:
             return jsonify({'error': "Image not uploaded"})
@@ -669,14 +670,14 @@ def upload():
             if len(faces) == 0:
                 # breed_pred_label, breed_pred_prob = get_prediction_probability_label(breeds_model, breeds_image_path,
                 # breeds_class_labels)
-                #breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
-                                                                                    # breeds_class_labels)
-                breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior, img_url, behavior_class_labels)
+                # breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
+                # breeds_class_labels)
+                breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior, img_url,
+                                                                                              behavior_class_labels)
             elif len(faces) > 0:
                 breed_pred_prob = 0;
                 breed_pred_label = 'Cannot mmake predictions for human images. Number of faces detected:', len(
                     faces), 'faces detected.'
-
 
         # print(breed_pred_label + "Breed")
         result = breed_pred_label
@@ -1891,13 +1892,16 @@ def upload():
     return jsonify(
         message=resarr,
     )
+
+
 ###########################################################################################################################################################################################################################################
 
 @app.route('/getPreviousBehaviors', methods=['GET', 'POST'], endpoint='PreviousBehaviors')
 def upload():
     resarr = []
 
-    cursor1.execute("select d.Full_Name, bp.behavior, bp.Date, bp.imageprefix from behaviorPastData bp inner join Dogs d on d.Dogid = bp.dogId")
+    cursor1.execute(
+        "select d.Full_Name, bp.behavior, bp.Date, bp.imageprefix from behaviorPastData bp inner join Dogs d on d.Dogid = bp.dogId")
 
     testt = cursor1.fetchall()
     # json_output = json.dumps(testt)
@@ -1908,6 +1912,7 @@ def upload():
         message=resarr,
     )
 
+
 @app.route('/getEntireDogList', methods=['GET', 'POST'], endpoint='EntireDogs')
 def dogList():
     dog_Array = []
@@ -1916,11 +1921,12 @@ def dogList():
 
     testt = cursor1.fetchall()
 
-    cursor1.execute("SELECT * FROM (SELECT d.Dogid as ID, d.Full_Name, getdate() as CurrentDate, datediff(YY,d.DOB,getdate()) * 365 as age, fv.description, fv.agerange, fv.ageMin as AgeMin, fv.ageMax as AgeMax from Dogs d inner join Breeds br on br.breedname = d.Breed inner join foodsAndVitamins fv on fv.breedid = br.id) as innerTable WHERE age between AgeMin and AgeMax")
+    cursor1.execute(
+        "SELECT * FROM (SELECT d.Dogid as ID, d.Full_Name, getdate() as CurrentDate, datediff(YY,d.DOB,getdate()) * 365 as age, fv.description, fv.agerange, fv.ageMin as AgeMin, fv.ageMax as AgeMax from Dogs d inner join Breeds br on br.breedname = d.Breed inner join foodsAndVitamins fv on fv.breedid = br.id) as innerTable WHERE age between AgeMin and AgeMax")
 
     foodsAndVitamins = cursor1.fetchall()
 
-    #print(dogs.index())
+    # print(dogs.index())
 
     for row in testt:
         dog_Array.append([x for x in row])
@@ -1931,6 +1937,30 @@ def dogList():
     return jsonify(
         message=dog_Array,
         Vitamins=vitaminArray
+    )
+
+
+@app.route('/getActivitiesforMoods', methods=['GET', 'POST'], endpoint='ActivitiesforMoods')
+def dogList():
+    Activities = []
+    #vitaminArray = []
+    mood = request.json['Mood']
+    # cursor1.execute("select ld.longdescription, afm.Description, m.Mood from LongDescriptionMoods ld inner join ActivitiesForMoods afm on afm.ActivityID = ld.ActivityID inner join Moods m on m.ID = afm.ID where m.Mood = ?"),
+
+    #testt = cursor1.fetchall()
+
+    query = ''' select ld.longdescription, afm.Description, m.Mood from LongDescriptionMoods ld inner join ActivitiesForMoods afm on afm.ActivityID = ld.ActivityID inner join Moods m on m.ID = afm.ID where m.Mood = ?'''
+    values = (mood)
+
+    testt = cursor1.execute(query, values)
+
+    # print(dogs.index())
+
+    for row in testt:
+        Activities.append([x for x in row])
+
+    return jsonify(
+        Activities=Activities
     )
 
 
