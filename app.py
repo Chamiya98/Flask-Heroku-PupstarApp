@@ -258,7 +258,7 @@ def pastDataBehavior():
     # behavior = User.query.filter_by(behavior=request.form['behavior']).first()
 
     print(breedName, behavior)
-    if breedName == "" or behavior == "" or behavior in "Cannot mmake predictions for human images":
+    if breedName == "" or behavior == "" or "Cannot mmake predictions for human images" in behavior:
         loginresult = "No Name Found"
         queryResult = "Insertion Failed / Human Face Identified"
     else:
