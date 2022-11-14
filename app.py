@@ -259,7 +259,7 @@ def pastDataBehavior():
 
     print(breedName, behavior)
     if breedName == "" or behavior == "" or "Cannot mmake predictions for human images" in behavior:
-        loginresult = "No Name Found"
+        loginresult = "No Name Found / Human Face Identified"
         queryResult = "Insertion Failed / Human Face Identified"
     else:
 
@@ -1911,7 +1911,8 @@ def upload():
 @app.route('/getEntireDogList', methods=['GET', 'POST'], endpoint='EntireDogs')
 def dogList():
     dog_Array = []
-    cursor1.execute("select Full_Name, Breed, ImageName from Dogs where ")
+    vitaminArray = []
+    cursor1.execute("select Full_Name, Breed, ImageName from Dogs")
 
     testt = cursor1.fetchall()
 
