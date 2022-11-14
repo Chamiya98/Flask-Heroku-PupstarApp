@@ -620,11 +620,66 @@ def upload():
             img_url = uploaded_img_path + filename
             with open(img_url, "wb") as fh:
                 fh.write(base64.b64decode(image))
-        breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior,
-                                                                                      img_url,
-                                                                                      behavior_class_labels)
+
+            import cv2
+            # from google.colab.patches import cv2_imshow
+            import matplotlib.pyplot as plt
+            # from google.colab import files
+            # % matplotlib
+            # inline
+
+            # from google.colab import drive
+            # drive.mount('/content/gdrive')
+
+            # !wget --no-check-certificate \
+            # extract pre-trained face detector
+            face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+            # face_cascade = cv2.CascadeClassifier('haarcascade_frontalcatface.xml')
+            # cat_cascade = cv2.CascadeClassifier('haarcascade_frontalcatface.xml')
+            print(face_cascade)
+
+            # load color (BGR) image2
+            img = cv2.imread(img_url)
+            # convert BGR image to grayscale
+            # !wget --no-check-certificate \
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            # !wget - -no - check - certificate \
+            # https: // raw.githubusercontent.com / computationalcore / introduction - to - opencv / master / assets / haarcascade_frontalface_default.xml
+            # find faces in image
+            faces = face_cascade.detectMultiScale(gray)
+            # cats = cat_cascade.detectMultiScale(gray, scaleFactor=1.3,
+            #	minNeighbors=10, minSize=(75, 75))
+
+            # print number of faces detected in the image
+            print('Number of faces detected:', len(faces))
+
+            # get bounding box for each detected face
+            for (x, y, w, h) in faces:
+                # add bounding box to color image
+                cv2.rectangle(img, (x, y), (x + w, y + h), (255, 0, 0), 2)
+
+            # convert BGR image to RGB for plotting
+            cv_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+            # display the image, along with bounding box
+            plt.imshow(cv_rgb)
+            plt.show()
+
+            # Make predictions
+            if len(faces) == 0:
+                # breed_pred_label, breed_pred_prob = get_prediction_probability_label(breeds_model, breeds_image_path,
+                # breeds_class_labels)
+                #breed_pred_label, breed_pred_prob = get_prediction_probability_label(model_breed, img_url,
+                                                                                    # breeds_class_labels)
+                breed_pred_label, breed_pred_prob = get_prediction_probability_label_behavior(model_behavior, img_url, behavior_class_labels)
+            elif len(faces) > 0:
+                breed_pred_prob = 0;
+                breed_pred_label = 'Cannot mmake predictions for human images. Number of faces detected:', len(
+                    faces), 'faces detected.'
+
+
         # print(breed_pred_label + "Breed")
-        result = "Mood is: " + breed_pred_label + "& Matching Probability is:" + str(breed_pred_prob)
+        result = "Mood is: " + breed_pred_label
         md = breed_pred_label
 
         return jsonify(
@@ -1856,7 +1911,7 @@ def upload():
 @app.route('/getEntireDogList', methods=['GET', 'POST'], endpoint='EntireDogs')
 def dogList():
     dog_Array = []
-    cursor1.execute("select Full_Name, Breed, ImageName from Dogs")
+    cursor1.execute("select Full_Name, Breed, ImageName from Dogs where ")
 
     testt = cursor1.fetchall()
 
