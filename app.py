@@ -849,9 +849,11 @@ def upload():
         result = pred_label_disease
         outdisease = pred_label_disease
         medications = []
-        for txt in disease_prescriptions[pred_label_disease]:
-            medications.append(txt)
-            print(txt)
+
+        if pred_label_disease not in "Cannot mmake predictions":
+            for txt in disease_prescriptions[pred_label_disease]:
+                medications.append(txt)
+                print(txt)
         # return Response(response=result)
         # return Response(respons)
         return jsonify(
