@@ -679,7 +679,7 @@ def upload():
 
 
         # print(breed_pred_label + "Breed")
-        result = "Mood is: " + breed_pred_label
+        result = breed_pred_label
         md = breed_pred_label
 
         return jsonify(
