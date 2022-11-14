@@ -1920,7 +1920,7 @@ def dogList():
 
     dogs = cursor1.fetchall()
 
-    print(dogs)
+    print(dogs.index(0))
 
     for row in testt:
         dog_Array.append([x for x in row])
