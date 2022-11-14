@@ -839,8 +839,8 @@ def upload():
                                                                                                        img_url,
                                                                                                        disease_class_labels)
             elif len(faces) > 0:
-                breed_pred_prob = 0;
-                breed_pred_label = 'Cannot mmake predictions for human images. Number of faces detected:', len(
+                #breed_pred_prob = 0;
+                pred_label_disease = 'Cannot mmake predictions for human images. Number of faces detected:', len(
                     faces), 'faces detected.'
 
 
