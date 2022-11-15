@@ -335,6 +335,7 @@ def pastDataBehavior():
 
     breedName = request.json['dogname']
     behavior = request.json['disease']
+    imgprefix = request.json['randomimgid']
 
     # rint(request.values)
     # print(breedName)
@@ -356,8 +357,8 @@ def pastDataBehavior():
         # dogId = int(dogId)
         print("DogId:", dogId)
         conn = db_connector()
-        query = ''' INSERT INTO diseasePastData (disease, Date, dogId) VALUES (?, ?, ?)'''
-        values = (behavior, today, insertdogId)
+        query = ''' INSERT INTO diseasePastData (disease, Date, dogId, imagePrefix) VALUES (?, ?, ?, ?)'''
+        values = (behavior, today, insertdogId, imgprefix)
 
         cur = conn.cursor()
         cur.execute(query, values)
@@ -859,7 +860,8 @@ def upload():
         return jsonify(
             Disease=result,
             medications=medications,
-            outd=outdisease
+            outd=outdisease,
+            randomid=id
         )
     else:
         flash('Allowed image types are - png, jpg, jpeg, gif')
