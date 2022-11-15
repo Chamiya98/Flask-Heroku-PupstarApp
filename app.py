@@ -2021,6 +2021,22 @@ def dogList():
         Activities=Activities
     )
 
+@app.route('/getPreviousDiseases', methods=['GET', 'POST'], endpoint='PreviousDiseases')
+def upload():
+    resarr = []
+
+    cursor1.execute(
+        "select dp.disease, d.Breed, dp.Date, dp.imagePrefix from diseasePastData dp inner join Dogs d on d.Dogid = dp.dogId")
+
+    testt = cursor1.fetchall()
+    # json_output = json.dumps(testt)
+    for row in testt:
+        resarr.append([x for x in row])
+    resarr  # or simply data.append(list(row))
+    return jsonify(
+        message=resarr,
+    )
+
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
