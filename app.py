@@ -857,6 +857,8 @@ def upload():
                 print(txt)
         # return Response(response=result)
         # return Response(respons)
+        else:
+            result = pred_label_disease
         return jsonify(
             Disease=result,
             medications=medications,
